@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\Horoscope\UpdateHoroscopeRequest;
 use App\Models\Horoscope;
 use App\Models\HoroscopeHouse;
 use App\Models\Star;
+use App\Services\Horoscope\HoroscopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,13 @@ use Illuminate\View\View;
 
 class HoroscopeController extends Controller
 {
+    protected HoroscopeService $horoscopeService;
+
+    public function __construct(HoroscopeService $horoscopeService)
+    {
+        $this->horoscopeService = $horoscopeService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -47,7 +55,7 @@ class HoroscopeController extends Controller
         $slug = Str::slug($data['name']) . '-' . $birthGregorian->format('YmdHi');
         
         $horoscope = Horoscope::create([
-            'user_id' => auth()->id(), // Assign to current admin temporarily or null
+            'user_id' => auth()->id(),
             'slug' => $slug,
             'name' => $data['name'],
             'gender' => $data['gender'],
@@ -56,11 +64,16 @@ class HoroscopeController extends Controller
             'view_year' => now()->year,
         ]);
 
-        // Auto-initialize 12 Houses (Empty)
-        $this->initializeHouses($horoscope);
+        // Use Service to Generate Horoscope
+        $this->horoscopeService->generateHoroscope(
+            $horoscope,
+            $birthGregorian,
+            $data['gender'],
+            $data['timezone'] ?? 'Asia/Ho_Chi_Minh'
+        );
 
         return redirect()->route('admin.horoscopes.edit', $horoscope)
-            ->with('success', 'Lá số mới đã được tạo. Vui lòng thiết lập sao.');
+            ->with('success', 'Lá số mới đã được tạo và an sao tự động.');
     }
 
     /**
@@ -99,8 +112,16 @@ class HoroscopeController extends Controller
             'timezone' => $data['timezone'] ?? 'Asia/Ho_Chi_Minh',
         ]);
 
+        // Re-generate Horoscope on update
+        $this->horoscopeService->generateHoroscope(
+            $horoscope,
+            $birthGregorian,
+            $data['gender'],
+            $data['timezone'] ?? 'Asia/Ho_Chi_Minh'
+        );
+
         return redirect()->route('admin.horoscopes.index')
-            ->with('success', 'Cập nhật thông tin lá số thành công.');
+            ->with('success', 'Cập nhật thông tin lá số và tính toán lại thành công.');
     }
 
     /**
@@ -108,34 +129,9 @@ class HoroscopeController extends Controller
      */
     public function destroy(Horoscope $horoscope): RedirectResponse
     {
-        $horoscope->delete(); // Cascade delete houses/stars handled by DB or manual cleanup?
-        // Should rely on DB cascade foreign keys ideally.
-        
+        $horoscope->delete();
         return redirect()->route('admin.horoscopes.index')
             ->with('success', 'Đã xóa lá số.');
     }
-
-    /**
-     * Helper to initialize 12 houses
-     */
-    protected function initializeHouses(Horoscope $horoscope)
-    {
-        $houses = [
-            'MENH' => 'Mệnh', 'PHU_MAU' => 'Phụ Mẫu', 'PHUC_DUC' => 'Phúc Đức', 
-            'DIEN_TRACH' => 'Điền Trạch', 'QUAN_LOC' => 'Quan Lộc', 'NO_BOC' => 'Nô Bộc', 
-            'THIEN_DI' => 'Thiên Di', 'TAT_ACH' => 'Tật Ách', 'TAI_BACH' => 'Tài Bạch', 
-            'TU_TUC' => 'Tử Tức', 'PHU_THE' => 'Phu Thê', 'HUYNH_DE' => 'Huynh Đệ'
-        ];
-
-        $order = 1;
-        foreach ($houses as $code => $label) {
-            HoroscopeHouse::create([
-                'horoscope_id' => $horoscope->id,
-                'code' => $code,
-                'label' => $label,
-                'house_order' => $order++,
-                // 'branch' => ... need calculation logic, leave null for manual set
-            ]);
-        }
-    }
 }
+

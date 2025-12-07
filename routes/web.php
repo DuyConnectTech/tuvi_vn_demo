@@ -8,6 +8,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/test-calendar', function () {
+    $s = new \App\Services\Horoscope\CalendarService();
+    $l = $s->toLunar('2004-03-18 12:00:00');
+    return [
+        'date' => $l->format('Y-m-d'),
+        'can_chi' => $s->getCanChi($l)
+    ];
+});
+
 // Admin Auth Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     
