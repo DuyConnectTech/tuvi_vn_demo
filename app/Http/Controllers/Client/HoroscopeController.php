@@ -33,7 +33,7 @@ class HoroscopeController extends Controller
     /**
      * Display a listing of user's horoscopes.
      */
-    public function myIndex()
+    public function myIndex(): RedirectResponse|View
     {
         if (!auth()->check()) {
             return redirect()->route('login'); // Assuming login route exists (e.g. from breeze/jetstream) or admin.login if only admin
