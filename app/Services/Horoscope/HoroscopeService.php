@@ -126,6 +126,11 @@ class HoroscopeService
         $thanHouse = $horoscope->houses->firstWhere('branch', $thanBranch);
         $thanCungCode = $thanHouse ? $thanHouse->code : '---';
 
+        // Calculate Menh-Cuc Relation
+        $menhElement = $this->getElementFromStr($napAm); // e.g., 'Thổ'
+        $cucElement = $this->getElementFromStr($cucInfo['cuc']); // e.g., 'Thổ' from 'Thổ Ngũ Cục'
+        $menhCucComment = $this->getMenhCucComment($menhElement, $cucElement);
+
         HoroscopeMetum::updateOrCreate(
             ['horoscope_id' => $horoscope->id],
             [
@@ -134,6 +139,7 @@ class HoroscopeService
                 'lai_nhan_cung' => $laiNhanCungCode,
                 'than_cung_code' => $thanCungCode,
                 'menh_chi_index' => $menhChiIndex,
+                'extra' => ['menh_cuc_relation' => $menhCucComment] // Store in extra JSON
             ]
         );
         
@@ -141,6 +147,32 @@ class HoroscopeService
         $this->calculateAndStoreBranchRelations($horoscope);
 
         return $horoscope;
+    }
+
+    /**
+     * Helper to get Element from string (e.g. "Thành Đầu Thổ" -> "Thổ").
+     */
+    protected function getElementFromStr($str) {
+        $parts = explode(' ', trim($str));
+        return end($parts);
+    }
+
+    /**
+     * Helper to compare Menh and Cuc elements.
+     */
+    protected function getMenhCucComment($menhHan, $cucHan) {
+        // $menhHan: Thổ, $cucHan: Thổ
+        $relations = [
+            'Kim' => ['Kim'=>'bình hòa', 'Thủy'=>'sinh xuất', 'Mộc'=>'khắc xuất', 'Hỏa'=>'khắc nhập', 'Thổ'=>'sinh nhập'],
+            'Mộc' => ['Mộc'=>'bình hòa', 'Hỏa'=>'sinh xuất', 'Thổ'=>'khắc xuất', 'Kim'=>'khắc nhập', 'Thủy'=>'sinh nhập'],
+            'Thủy' => ['Thủy'=>'bình hòa', 'Mộc'=>'sinh xuất', 'Hỏa'=>'khắc xuất', 'Thổ'=>'khắc nhập', 'Kim'=>'sinh nhập'],
+            'Hỏa' => ['Hỏa'=>'bình hòa', 'Thổ'=>'sinh xuất', 'Kim'=>'khắc xuất', 'Thủy'=>'khắc nhập', 'Mộc'=>'sinh nhập'],
+            'Thổ' => ['Thổ'=>'bình hòa', 'Kim'=>'sinh xuất', 'Thủy'=>'khắc xuất', 'Mộc'=>'khắc nhập', 'Hỏa'=>'sinh nhập'],
+        ];
+        
+        $rel = $relations[$menhHan][$cucHan] ?? '';
+        // Tuvi.vn format: (Cục Thổ Mệnh Thổ bình hòa)
+        return "Cục $cucHan Mệnh $menhHan $rel";
     }
 
     /**

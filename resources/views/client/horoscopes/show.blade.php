@@ -189,12 +189,9 @@
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Bản Mệnh:</span>
-                                <span class="info-value">{{ $horoscope->nap_am }}</span>
+                                <span class="info-value">{{ $horoscope->nap_am }} - {{ $horoscope->cuc }} <br> <small class="text-muted">({{ $horoscope->meta->extra['menh_cuc_relation'] ?? '' }})</small></span>
                             </div>
-                            <div class="info-row">
-                                <span class="info-label">Cục:</span>
-                                <span class="info-value">{{ $horoscope->cuc }} ({{ $horoscope->so_cuc }} tuổi)</span>
-                            </div>
+                            {{-- Remove separate Cuc row if merged --}}
                             <div class="info-row">
                                 <span class="info-label">Chủ Mệnh:</span>
                                 <span class="info-value">{{ $horoscope->meta->chu_menh ?? '---' }}</span>
