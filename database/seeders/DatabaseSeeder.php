@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BranchRelationSeeder::class,
             StarSeeder::class,
+            LucThapHoaGiapSeeder::class,
+            StarEnergyLevelSeeder::class,
         ]);
     }
 }

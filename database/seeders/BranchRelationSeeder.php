@@ -29,15 +29,17 @@ class BranchRelationSeeder extends Seeder
         ];
 
         foreach ($tam_hop as $group) {
-            // Create pairs for each combination in the group
-            foreach ($group as $b1) {
-                foreach ($group as $b2) {
-                    if ($b1 !== $b2) {
+            foreach ($group as $b1_code) {
+                foreach ($group as $b2_code) {
+                    if ($b1_code !== $b2_code) {
+                        // For Tam Hop, description could be "Tý Tam Hợp Thân Thìn" for "Tý" branch
+                        // Or more simply "Tý Tam Hợp Thân" and "Tý Tam Hợp Thìn"
+                        // Let's make it direct for simplicity for now: "Tý Tam Hợp Thân"
                         $relations[] = [
-                            'from_house_code' => $b1,
-                            'to_house_code' => $b2,
+                            'from_house_code' => $b1_code,
+                            'to_house_code' => $b2_code,
                             'relation_type' => 'tam_hop',
-                            'description' => 'Tam Hợp',
+                            'description' => $branches[$b1_code] . ' Tam Hợp ' . $branches[$b2_code],
                             'created_at' => now(), 'updated_at' => now(),
                         ];
                     }
@@ -56,8 +58,8 @@ class BranchRelationSeeder extends Seeder
         ];
 
         foreach ($luc_xung as $pair) {
-            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'xung', 'description' => 'Lục Xung (Chính Chiếu)', 'created_at' => now(), 'updated_at' => now()];
-            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'xung', 'description' => 'Lục Xung (Chính Chiếu)', 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'xung', 'description' => $branches[$pair[0]] . ' Lục Xung ' . $branches[$pair[1]], 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'xung', 'description' => $branches[$pair[1]] . ' Lục Xung ' . $branches[$pair[0]], 'created_at' => now(), 'updated_at' => now()];
         }
 
         // 3. NHỊ HỢP (Lục Hợp) - Tốt
@@ -71,8 +73,8 @@ class BranchRelationSeeder extends Seeder
         ];
 
         foreach ($nhi_hop as $pair) {
-            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'nhi_hop', 'description' => 'Nhị Hợp', 'created_at' => now(), 'updated_at' => now()];
-            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'nhi_hop', 'description' => 'Nhị Hợp', 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'nhi_hop', 'description' => $branches[$pair[0]] . ' Nhị Hợp ' . $branches[$pair[1]], 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'nhi_hop', 'description' => $branches[$pair[1]] . ' Nhị Hợp ' . $branches[$pair[0]], 'created_at' => now(), 'updated_at' => now()];
         }
 
         // 4. LỤC HẠI - Xấu
@@ -86,8 +88,8 @@ class BranchRelationSeeder extends Seeder
         ];
 
         foreach ($luc_hai as $pair) {
-            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'luc_hai', 'description' => 'Lục Hại', 'created_at' => now(), 'updated_at' => now()];
-            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'luc_hai', 'description' => 'Lục Hại', 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[0], 'to_house_code' => $pair[1], 'relation_type' => 'luc_hai', 'description' => $branches[$pair[0]] . ' Lục Hại ' . $branches[$pair[1]], 'created_at' => now(), 'updated_at' => now()];
+            $relations[] = ['from_house_code' => $pair[1], 'to_house_code' => $pair[0], 'relation_type' => 'luc_hai', 'description' => $branches[$pair[1]] . ' Lục Hại ' . $branches[$pair[0]], 'created_at' => now(), 'updated_at' => now()];
         }
 
         DB::table('branch_relations')->insert($relations);
