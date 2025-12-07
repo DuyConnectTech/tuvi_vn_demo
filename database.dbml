@@ -1,0 +1,304 @@
+Project "TuVi Engine" {
+  database_type: "MySQL"
+}
+
+// =======================
+// USERS (optional)
+// =======================
+Table users {
+  id bigint [pk, increment]
+  name varchar(191)
+  email varchar(191) [unique]
+  password varchar(255)
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPES – LÁ SỐ
+// =======================
+Table horoscopes {
+  id bigint [pk, increment]
+  user_id bigint [note: 'FK tới users (nếu có đăng nhập)']
+  slug varchar(255) [not null]
+  name varchar(191) [note: 'Tên người được lập lá số (optional)']
+  gender varchar(10) [note: 'male / female']
+
+  birth_gregorian datetime [not null, note: 'Ngày giờ sinh dương lịch']
+  timezone varchar(64) [default: 'Asia/Ho_Chi_Minh']
+
+  // Âm lịch (optional – nếu convert)
+  birth_lunar_year int
+  birth_lunar_month int
+  birth_lunar_day int
+  birth_lunar_is_leap boolean [default: false]
+
+  // Can chi
+  can_chi_year varchar(50)
+  can_chi_month varchar(50)
+  can_chi_day varchar(50)
+  can_chi_hour varchar(50)
+
+  // Mệnh, cục, cân lượng
+  nap_am varchar(100) [note: 'Nạp âm – VD: Thành Đầu Thổ']
+  am_duong varchar(10) [note: 'Âm / Dương']
+  cuc varchar(50) [note: 'Mộc Tam Cục, Thủy Nhị Cục,...']
+  can_luong varchar(50) [note: 'VD: 4 lượng 2 chỉ']
+
+  // tracking + source
+  external_chart_id bigint [note: 'ID gốc từ tuvi.vn (vd: 13405)']
+  source_url varchar(511)
+  view_year int
+  view_month int
+  raw_html longtext
+
+  raw_input json [note: 'Lưu lại input gốc nếu cần']
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPE_META – THÔNG TIN MỞ RỘNG
+// =======================
+Table horoscope_meta {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+  view_year_can_chi varchar(50)
+  age_at_view int
+  chu_menh varchar(191)
+  chu_than varchar(191)
+  lai_nhan_cung varchar(50)
+  template int
+  theme int
+  extra json
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPE_HOUSES – 12 CUNG
+// =======================
+Table horoscope_houses {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+
+  code varchar(50) [not null, note: 'MENH, PHU_MAU, PHUC_DUC,...']
+  label varchar(100) [not null, note: 'Mệnh, Phụ Mẫu, Phúc Đức,...']
+  branch varchar(20) [note: 'Địa chi: Tý, Sửu, Dần,...']
+  element varchar(20) [note: 'Ngũ hành cung: Thủy, Mộc, Hỏa, Thổ, Kim']
+  life_phase varchar(50) [note: 'Trường Sinh, Đế Vượng,... nếu có']
+
+  house_order int [not null, note: 'Thứ tự hiển thị 1..12 (để sort bảng)']
+
+  // Đại vận gốc cho cung
+  dai_van_start_age int
+  dai_van_end_age int
+
+  // extra fields
+  score int [note: 'điểm/độ số hiển thị trên tuvi.vn']
+  lunar_month int [note: 'Tháng âm tương ứng (vd: Th.12)']
+  relations json [note: 'xung_chieu, tam_hop, luc_hop...']
+
+  extra json
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// STARS – DANH SÁCH SAO
+// =======================
+Table stars {
+  id bigint [pk, increment]
+  name varchar(100) [not null, note: 'Tên sao – VD: Tử Vi']
+  slug varchar(100) [not null, unique, note: 'tu-vi, thien-tuong,...']
+  group_type varchar(20) [default: 'phu_tinh', note: 'chinh_tinh / phu_tinh / sat_tinh / khac']
+  default_element varchar(20) [note: 'Ngũ hành sao (nếu dùng)']
+  is_main boolean [default: false, note: 'Chính tinh = 1']
+
+  quality varchar(100) [note: 'miếu/vượng/đắc/hãm']
+  aliases json [note: 'Tên khác/alias để match khi crawl']
+  keywords json [note: 'từ khóa để detect trong HTML']
+  description text
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPE_HOUSE_STARS – SAO TRONG CUNG
+// =======================
+Table horoscope_house_stars {
+  id bigint [pk, increment]
+  horoscope_house_id bigint [not null]
+  star_id bigint [not null]
+
+  status varchar(10) [note: 'Miếu / Vượng / Đắc / Bình / Hãm']
+  is_transit boolean [default: false, note: '0: sao gốc, 1: sao lưu/đi qua']
+  source_text varchar(255) [note: 'Raw text like "-Tham Lang (H)"']
+  order int [note: 'thứ tự xuất hiện trong HTML']
+  extra json
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// FOUR PILLARS (TỨ TRỤ)
+// =======================
+Table chart_four_pillars {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+  pillar_type varchar(10) [not null, note: 'year|month|day|hour']
+  heavenly_stem varchar(10)
+  earthly_branch varchar(10)
+  element varchar(20)
+  hidden_stems json [note: 'hidden stems if any']
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// BRANCH_RELATIONS – 12 CUNG RELATIONS
+// =======================
+Table branch_relations {
+  id bigint [pk, increment]
+  from_house_code varchar(50) [not null]
+  to_house_code varchar(50) [not null]
+  relation_type varchar(50) [not null, note: 'tam_hop|xung|nhihop|chieu|luc_hop|doi_chieu']
+  description varchar(255)
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPE_HOUSE_STAR_EFFECTS (HÓA TINH -> target house)
+// =======================
+Table horoscope_house_star_effects {
+  id bigint [pk, increment]
+  horoscope_house_id bigint [not null]
+  star_id bigint [not null]
+  effect_type varchar(50) [note: 'HoaLoc|HoaQuyen|HoaKhoa|HoaKy']
+  target_house_code varchar(50) [note: 'code target, e.g. HUYNH_DE']
+  extra json
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// RULES – LUẬN GIẢI
+// =======================
+Table rules {
+  id bigint [pk, increment]
+  code varchar(100) [not null, unique, note: 'RULE_MENH_TUVI_THIENTUONG']
+  scope varchar(20) [not null, default: 'house', note: 'house / global / period']
+  target_house varchar(50) [note: 'MENH, PHU_MAU,... nếu scope=house']
+
+  priority int [default: 100, note: 'Ưu tiên rule']
+
+  text_template text [not null, note: 'Câu luận giải']
+
+  is_active boolean [default: true]
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// RULE_CONDITIONS – ĐIỀU KIỆN RULE
+// =======================
+Table rule_conditions {
+  id bigint [pk, increment]
+  rule_id bigint [not null]
+
+  type varchar(50) [not null, note: 'has_star, has_any_star, has_star_pair, can_chi_year,...']
+  field varchar(100) [note: 'house.stars, meta.can_chi_year,...']
+  operator varchar(20) [note: '=, IN, CONTAINS,...']
+  value json [not null, note: 'VD: ["Tử Vi","Thiên Tướng"]']
+  or_group int [note: 'group id for OR conditions']
+  house_code varchar(50) [note: 'apply condition to specific house if needed']
+
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// HOROSCOPE_READINGS – LUẬN GIẢI ĐÃ RENDER / CACHE
+// =======================
+Table horoscope_readings {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+  house_code varchar(50) [note: 'NULL nếu global']
+  rule_id bigint
+  text text
+  rendered_by varchar(100) [note: 'engine|human|ai']
+  score int [note: 'confidence or priority']
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// TAGS & CHART_TAGS
+// =======================
+Table tags {
+  id bigint [pk, increment]
+  name varchar(100) [not null, unique]
+  slug varchar(100) [not null, unique]
+  created_at datetime
+  updated_at datetime
+}
+
+Table chart_tags {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+  tag_id bigint [not null]
+  created_at datetime
+}
+
+// =======================
+// CRAWL_LOGS
+// =======================
+Table crawl_logs {
+  id bigint [pk, increment]
+  horoscope_id bigint
+  source_url varchar(511)
+  status_code int
+  response_length int
+  crawled_at datetime
+  raw_html longtext
+  notes text
+}
+
+// =======================
+// HOROSCOPE_TRANSACTIONS (optional)
+// =======================
+Table horoscope_transactions {
+  id bigint [pk, increment]
+  horoscope_id bigint [not null]
+  user_id bigint
+  amount decimal(10,2) [default: 0]
+  currency varchar(10) [default: 'VND']
+  status varchar(50) [default: 'pending']
+  payload json
+  created_at datetime
+  updated_at datetime
+}
+
+// =======================
+// RELATIONSHIPS (Refs)
+// =======================
+Ref: horoscopes.user_id > users.id
+Ref: horoscope_meta.horoscope_id > horoscopes.id
+Ref: horoscope_houses.horoscope_id > horoscopes.id
+Ref: horoscope_house_stars.horoscope_house_id > horoscope_houses.id
+Ref: horoscope_house_stars.star_id > stars.id
+Ref: chart_four_pillars.horoscope_id > horoscopes.id
+Ref: horoscope_house_star_effects.horoscope_house_id > horoscope_houses.id
+Ref: horoscope_house_star_effects.star_id > stars.id
+Ref: rule_conditions.rule_id > rules.id
+Ref: horoscope_readings.horoscope_id > horoscopes.id
+Ref: chart_tags.horoscope_id > horoscopes.id
+Ref: chart_tags.tag_id > tags.id
+Ref: horoscope_transactions.horoscope_id > horoscopes.id
+Ref: horoscope_transactions.user_id > users.id
