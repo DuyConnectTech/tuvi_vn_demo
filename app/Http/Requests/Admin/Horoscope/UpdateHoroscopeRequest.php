@@ -19,6 +19,10 @@ class UpdateHoroscopeRequest extends FormRequest
             'birth_date' => ['required', 'date'],
             'birth_time' => ['required', 'date_format:H:i'],
             'timezone' => ['nullable', 'string', 'max:64'],
+            'description' => ['nullable', 'string'],
+            'is_public' => ['nullable', 'boolean'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['exists:tags,id'],
         ];
     }
 }

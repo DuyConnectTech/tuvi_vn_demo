@@ -89,34 +89,42 @@ class HoroscopeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Horoscope $horoscope): View
-    {
-        $horoscope->load(['houses.stars', 'meta']);
-        $allStars = Star::orderBy('name')->get();
-
-        return view('admin.horoscopes.edit', compact('horoscope', 'allStars'));
-    }
-
+        public function edit(Horoscope $horoscope): View
+        {
+            $horoscope->load(['houses.stars', 'meta', 'tags']);
+            $allStars = Star::orderBy('name')->get();
+            $allTags = \App\Models\Tag::all();
+            
+            return view('admin.horoscopes.edit', compact('horoscope', 'allStars', 'allTags'));
+        }
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateHoroscopeRequest $request, Horoscope $horoscope): RedirectResponse
-    {
-        $data = $request->validated();
-
-        // Combine date and time with timezone
-        $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
-        $birthGregorian = Carbon::createFromFormat('Y-m-d H:i', $data['birth_date'] . ' ' . $data['birth_time'], $timezone);
-
-        $horoscope->update([
-            'name' => $data['name'],
-            'gender' => $data['gender'],
-            'birth_gregorian' => $birthGregorian,
-            'timezone' => $timezone,
-        ]);
-
-        // Re-generate Horoscope on update
-        $this->horoscopeService->generateHoroscope(
+        public function update(UpdateHoroscopeRequest $request, Horoscope $horoscope): RedirectResponse
+        {
+            $data = $request->validated();
+            
+            // Combine date and time with timezone
+            $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
+            $birthGregorian = Carbon::createFromFormat('Y-m-d H:i', $data['birth_date'] . ' ' . $data['birth_time'], $timezone);
+            
+            $horoscope->update([
+                'name' => $data['name'],
+                'gender' => $data['gender'],
+                'birth_gregorian' => $birthGregorian,
+                'timezone' => $timezone,
+                'description' => $data['description'] ?? null,
+                'is_public' => $request->boolean('is_public'),
+            ]);
+    
+            // Sync Tags
+            if (isset($data['tags'])) {
+                $horoscope->tags()->sync($data['tags']);
+            } else {
+                $horoscope->tags()->detach();
+            }
+    
+            // Re-generate Horoscope on update        $this->horoscopeService->generateHoroscope(
             $horoscope,
             $birthGregorian,
             $data['gender'],

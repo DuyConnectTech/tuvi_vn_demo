@@ -69,6 +69,38 @@ class StarSeeder extends Seeder
             ['name' => 'Tướng Quân', 'slug' => 'tuong-quan', 'group_type' => 'phu_tinh', 'default_element' => 'Mộc', 'is_main' => false, 'quality' => 'Quyền'],
             ['name' => 'Thiên Hình', 'slug' => 'thien-hinh', 'group_type' => 'phu_tinh', 'default_element' => 'Hỏa', 'is_main' => false, 'quality' => 'Hình khắc'],
             ['name' => 'Thiên Riêu', 'slug' => 'thien-rieu', 'group_type' => 'phu_tinh', 'default_element' => 'Thủy', 'is_main' => false, 'quality' => 'Ám Tinh, Dục'],
+            
+            // --- 6. TUẦN / TRIỆT ---
+            ['name' => 'Tuần', 'slug' => 'tuan', 'group_type' => 'khac', 'is_main' => false, 'quality' => 'Không Vong'],
+            ['name' => 'Triệt', 'slug' => 'triet', 'group_type' => 'khac', 'is_main' => false, 'quality' => 'Không Vong'],
+
+            // --- 7. VÒNG THÁI TUẾ ---
+            ['name' => 'Thái Tuế', 'slug' => 'thai-tue', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Đứng đầu vòng Thái Tuế'],
+            ['name' => 'Thiếu Dương', 'slug' => 'thieu-duong', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Tang Môn', 'slug' => 'tang-mon', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Thiếu Âm', 'slug' => 'thieu-am', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Quan Phù', 'slug' => 'quan-phu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Tử Phù', 'slug' => 'tu-phu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Tuế Phá', 'slug' => 'tue-pha', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Long Đức', 'slug' => 'long-duc', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Bạch Hổ', 'slug' => 'bach-ho', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Phúc Đức', 'slug' => 'phuc-duc', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Điếu Khách', 'slug' => 'dieu-khach', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+            ['name' => 'Trực Phù', 'slug' => 'truc-phu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Thái Tuế'],
+
+            // --- 8. VÒNG TRÀNG SINH ---
+            ['name' => 'Tràng Sinh', 'slug' => 'trang-sinh', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Đứng đầu vòng Tràng Sinh'],
+            ['name' => 'Mộc Dục', 'slug' => 'moc-duc', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Quan Đới', 'slug' => 'quan-doi', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Lâm Quan', 'slug' => 'lam-quan', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Đế Vượng', 'slug' => 'de-vuong', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Suy', 'slug' => 'suy', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Bệnh', 'slug' => 'benh', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Tử', 'slug' => 'tu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Mộ', 'slug' => 'mo', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Tuyệt', 'slug' => 'tuyet', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Thai', 'slug' => 'thai', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
+            ['name' => 'Dưỡng', 'slug' => 'duong', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
 
         ];
 

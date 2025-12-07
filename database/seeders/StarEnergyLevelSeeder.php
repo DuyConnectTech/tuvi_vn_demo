@@ -164,6 +164,114 @@ class StarEnergyLevelSeeder extends Seeder
                 'thin' => 'M', 'tuat' => 'M', 'suu' => 'M', 'mui' => 'M',
                 'ty' => 'H', 'ngo' => 'H', 'dan' => 'H', 'than' => 'H', 'mao' => 'H', 'dau' => 'H', 'ti' => 'H', 'hoi' => 'H'
             ],
+
+            // 15. LỘC TỒN (Thổ)
+            'loc-ton' => [
+                'thin' => 'M', 'tuat' => 'M', 'suu' => 'M', 'mui' => 'M', // Miếu
+                'dan' => 'B', 'than' => 'B', 'ti' => 'B', 'hoi' => 'B', 'ty' => 'B', 'ngo' => 'B', 'mao' => 'B', 'dau' => 'B' // Bình
+            ],
+
+            // 16. THIÊN MÃ (Hỏa)
+            'thien-ma' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ngo' => 'D', 'ty' => 'D', // Đắc
+                'thin' => 'H', 'tuat' => 'H', 'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+
+            // 17. VĂN XƯƠNG (Kim)
+            'van-xuong' => [
+                'ti' => 'M', 'dau' => 'M', 'suu' => 'M', // Miếu
+                'dan' => 'V', 'ngo' => 'V', 'tuat' => 'V', // Vượng
+                'than' => 'D', 'ty' => 'D', 'thin' => 'D', // Đắc
+                'hoi' => 'H', 'mao' => 'H', 'mui' => 'H' // Hãm
+            ],
+
+            // 18. VĂN KHÚC (Thủy)
+            'van-khuc' => [
+                'ty' => 'M', 'ngo' => 'M', 'mao' => 'M', 'dau' => 'M', // Miếu
+                'dan' => 'V', 'than' => 'V', 'thin' => 'V', 'tuat' => 'V', // Vượng
+                'ti' => 'D', 'hoi' => 'D', // Đắc
+                'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+            
+            // 19. THIÊN KHÔI (Hỏa)
+            'thien-khoi' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'B', 'tuat' => 'B', 'suu' => 'B', 'mui' => 'B' // Bình
+            ],
+
+            // 20. THIÊN VIỆT (Hỏa)
+            'thien-viet' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'B', 'tuat' => 'B', 'suu' => 'B', 'mui' => 'B' // Bình
+            ],
+
+            // 21. TẢ PHÙ (Thổ)
+            'ta-phu' => [
+                'thin' => 'M', 'tuat' => 'M', 'suu' => 'M', 'mui' => 'M', // Miếu
+                'ty' => 'B', 'ngo' => 'B', 'dan' => 'B', 'than' => 'B', 'mao' => 'B', 'dau' => 'B', 'ti' => 'B', 'hoi' => 'B' // Bình
+            ],
+
+            // 22. HỮU BẬT (Thổ)
+            'huu-bat' => [
+                'thin' => 'M', 'tuat' => 'M', 'suu' => 'M', 'mui' => 'M', // Miếu
+                'ty' => 'B', 'ngo' => 'B', 'dan' => 'B', 'than' => 'B', 'mao' => 'B', 'dau' => 'B', 'ti' => 'B', 'hoi' => 'B' // Bình
+            ],
+
+            // 23. ĐỊA KHÔNG (Hỏa)
+            'dia-khong' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'H', 'tuat' => 'H', 'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+
+            // 24. ĐỊA KIẾP (Hỏa)
+            'dia-kiep' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'H', 'tuat' => 'H', 'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+            
+            // 25. HỎA TINH (Hỏa)
+            'hoa-tinh' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'H', 'tuat' => 'H', 'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+
+            // 26. LINH TINH (Hỏa)
+            'linh-tinh' => [
+                'dan' => 'M', 'than' => 'M', 'ti' => 'M', 'hoi' => 'M', // Miếu
+                'mao' => 'V', 'dau' => 'V', // Vượng
+                'ty' => 'D', 'ngo' => 'D', // Đắc
+                'thin' => 'H', 'tuat' => 'H', 'suu' => 'H', 'mui' => 'H' // Hãm
+            ],
+
+            // Tứ Hóa: Thường không có Miếu Hãm riêng, tùy thuộc sao gốc. Để Bình.
+            'hoa-loc' => [
+                'ty' => 'B', 'suu' => 'B', 'dan' => 'B', 'mao' => 'B', 'thin' => 'B', 'ti' => 'B',
+                'ngo' => 'B', 'mui' => 'B', 'than' => 'B', 'dau' => 'B', 'tuat' => 'B', 'hoi' => 'B'
+            ],
+            'hoa-quyen' => [
+                'ty' => 'B', 'suu' => 'B', 'dan' => 'B', 'mao' => 'B', 'thin' => 'B', 'ti' => 'B',
+                'ngo' => 'B', 'mui' => 'B', 'than' => 'B', 'dau' => 'B', 'tuat' => 'B', 'hoi' => 'B'
+            ],
+            'hoa-khoa' => [
+                'ty' => 'B', 'suu' => 'B', 'dan' => 'B', 'mao' => 'B', 'thin' => 'B', 'ti' => 'B',
+                'ngo' => 'B', 'mui' => 'B', 'than' => 'B', 'dau' => 'B', 'tuat' => 'B', 'hoi' => 'B'
+            ],
+            'hoa-ky' => [
+                'ty' => 'B', 'suu' => 'B', 'dan' => 'B', 'mao' => 'B', 'thin' => 'B', 'ti' => 'B',
+                'ngo' => 'B', 'mui' => 'B', 'than' => 'B', 'dau' => 'B', 'tuat' => 'B', 'hoi' => 'B'
+            ],
         ];
 
         $insertData = [];

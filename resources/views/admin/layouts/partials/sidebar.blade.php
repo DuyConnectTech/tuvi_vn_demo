@@ -39,7 +39,31 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+
+                {{-- Users Management --}}
+                <li class="nav-item">
+                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Quản lý Thành viên</p>
+                    </a>
+                </li>
                 
+                {{-- Glossaries Management --}}
+                <li class="nav-item">
+                    <a href="{{ route('admin.glossaries.index') }}" class="nav-link {{ request()->routeIs('admin.glossaries.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-book"></i>
+                        <p>Quản lý Thuật ngữ</p>
+                    </a>
+                </li>
+
+                {{-- Tags Management --}}
+                <li class="nav-item">
+                    <a href="{{ route('admin.tags.index') }}" class="nav-link {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-tags"></i>
+                        <p>Quản lý Tags</p>
+                    </a>
+                </li>
+
                 {{-- Stars Management --}}
                 <li class="nav-item">
                     <a href="#" class="nav-link">

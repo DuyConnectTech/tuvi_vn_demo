@@ -53,15 +53,6 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="view_year" class="font-weight-bold">Năm xem hạn</label>
-                            <select class="form-control form-control-lg" id="view_year" name="view_year">
-                                @for($y = date('Y') - 10; $y <= date('Y') + 10; $y++)
-                                    <option value="{{ $y }}" {{ old('view_year', date('Y')) == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-
                         <input type="hidden" name="timezone" value="Asia/Ho_Chi_Minh">
 
                         <div class="form-group mt-4">
@@ -96,6 +87,9 @@
     $(document).ready(function() {
         // 1. Load History
         loadHistory();
+
+        // 2. Save History on Form Submit? No, save on Show page is better.
+        // But we can simulate it or just rely on Show page logic.
     });
 
     function loadHistory() {

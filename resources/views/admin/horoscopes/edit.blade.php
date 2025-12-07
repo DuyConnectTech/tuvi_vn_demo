@@ -39,7 +39,35 @@
                             <label>Giờ sinh</label>
                             <input type="time" class="form-control" name="birth_time" value="{{ $horoscope->birth_gregorian->format('H:i') }}">
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Cập nhật thông tin</button>
+
+                        <div class="form-group">
+                            <label>Ghi chú / Mô tả</label>
+                            <textarea class="form-control" name="description" rows="3">{{ old('description', $horoscope->description) }}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Tags</label>
+                            <select class="form-control select2-tags" name="tags[]" multiple="multiple">
+                                @foreach($allTags as $tag)
+                                    <option value="{{ $tag->id }}" {{ in_array($tag->id, $horoscope->tags->pluck('id')->toArray()) ? 'selected' : '' }}>{{ $tag->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox" id="is_public" name="is_public" value="1" {{ $horoscope->is_public ? 'checked' : '' }}>
+                                <label for="is_public" class="custom-control-label">Công khai</label>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="{{ route('client.horoscopes.show', $horoscope->slug) }}" target="_blank" class="btn btn-info btn-block">
+                                <i class="fas fa-eye"></i> Xem Lá Số trên Client
+                            </a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block mt-2">Cập nhật thông tin</button>
                     </div>
                 </form>
             </div>
@@ -121,7 +149,13 @@
 @push('js')
 <script>
     $(document).ready(function() {
-        // Add Star
+        // Init Select2
+        $('.select2-tags').select2({
+            theme: 'bootstrap4',
+            placeholder: "Chọn tags",
+            allowClear: true
+        });
+
         $('.btn-add-star').click(function() {
             let houseId = $(this).data('house-id');
             let starId = $(`#star-select-${houseId}`).val();

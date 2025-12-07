@@ -65,7 +65,8 @@ class Horoscope extends Model
 		'external_chart_id' => 'int',
 		'view_year' => 'int',
 		'view_month' => 'int',
-		'raw_input' => 'json'
+		'raw_input' => 'json',
+		'is_public' => 'boolean'
 	];
 
 	protected $fillable = [
@@ -92,13 +93,20 @@ class Horoscope extends Model
 		'view_year',
 		'view_month',
 		'raw_html',
-		'raw_input'
+		'raw_input',
+        'description',
+        'is_public'
 	];
 
 	public function user()
 	{
 		return $this->belongsTo(User::class);
 	}
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'chart_tags', 'horoscope_id', 'tag_id')->withTimestamps();
+    }
 
 	public function chart_four_pillars()
 	{

@@ -48,6 +48,8 @@ class HoroscopeMetum extends Model
 		'chu_menh',
 		'chu_than',
 		'lai_nhan_cung',
+        'than_cung_code',
+        'menh_chi_index',
 		'template',
 		'theme',
 		'extra'
