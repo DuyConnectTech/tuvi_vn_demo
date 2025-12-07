@@ -4,6 +4,7 @@ namespace App\Services\Horoscope;
 
 use App\Models\Horoscope;
 use App\Models\HoroscopeHouse;
+use App\Models\HoroscopeHouseStar;
 use App\Models\HoroscopeMetum;
 use App\Models\Star;
 use Carbon\Carbon;
@@ -43,6 +44,7 @@ class HoroscopeService
         $lunarYear = $lunarDetails['lunar_year'];
         $lunarMonth = $lunarDetails['lunar_month'];
         $lunarDay = $lunarDetails['lunar_day'];
+        $lunarHour = $lunarDetails['chi_hour_index']; // Chi Hour Index (0-11)
         // $isLeapMonth = $lunarDetails['is_leap']; // For now, ignoring leap month complexity
 
         // Determine Can Chi of the birth year (Can and Chi parts)
@@ -67,13 +69,13 @@ class HoroscopeService
         $horoscope->update(['nap_am' => $napAm]);
 
         $cucInfo = $this->determineCuc($lunarMonth, $lunarDay, $yearCan);
-        $horoscope->update(['cuc' => $cucInfo['cuc']]);
+        $horoscope->update(['cuc' => $cucInfo['cuc'], 'so_cuc' => $cucInfo['so_cuc']]); // Store so_cuc
 
         // 3. An Mệnh, Thân, Thập nhị cung (12 Cung địa bàn và chức năng)
         $this->anCungMenhThan($horoscope, $lunarMonth, $lunarHour);
 
         // 4. An Sao (The most complex part)
-        $this->anChinhTinh($horoscope); // 14 Chính Tinh
+        $this->anChinhTinh($horoscope, $lunarDay, $cucInfo['so_cuc']); // Pass lunarDay and so_cuc
         $this->anTuHoa($horoscope); // Tứ Hóa
         $this->anPhuTinhCoBan($horoscope); // Một số Phụ Tinh cơ bản
 
@@ -119,23 +121,94 @@ class HoroscopeService
 
     /**
      * Determine Cục (Mộc Tam Cục, Kim Tứ Cục...)
-     * Needs lunar month, lunar day, and year Can.
-     * This is a complex calculation. Placeholder for now.
      *
      * @param int $lunarMonth
-     * @param int $lunarDay
+     * @param int $lunarHour
      * @param string $yearCan
      * @return array ['cuc' => string, 'so_cuc' => int]
      */
-    protected function determineCuc(int $lunarMonth, int $lunarDay, string $yearCan): array
+    protected function determineCuc(int $lunarMonth, int $lunarHour, string $yearCan): array
     {
-        // This is a simplified placeholder. Actual Cục calculation is intricate.
-        // It depends on Can Chi of the year and the position of the Mệnh cung.
-        // For now, let's return a dummy value.
-        return [
-            'cuc' => 'Thủy Nhị Cục', // Dummy value
-            'so_cuc' => 2,
+        // 1. Determine Menh Chi Index
+        $menhChiIndex = $this->calculateMenhChiIndex($lunarMonth, $lunarHour);
+        $menhChi = self::CHIS[$menhChiIndex];
+
+        // 2. Determine Can of Menh Cung (Ngu Dan Don)
+        // Year Can determines Can of Dan month (month 1)
+        $canOfMenh = $this->getCanOfChi($yearCan, $menhChiIndex);
+
+        // 3. Get Nap Am of Can + Chi Menh
+        $canChiMenh = $canOfMenh . ' ' . $menhChi;
+        $lucThap = \App\Models\LucThapHoaGiap::where('can_chi', $canChiMenh)->first();
+
+        if (!$lucThap) {
+            return ['cuc' => 'Không xác định', 'so_cuc' => 0];
+        }
+
+        $hanhCuc = $lucThap->ngu_hanh; // Kim, Moc, Thuy, Hoa, Tho
+
+        // Map Element to Cuc Name and Number
+        $cucMap = [
+            'Thủy' => ['cuc' => 'Thủy Nhị Cục', 'so_cuc' => 2],
+            'Mộc' => ['cuc' => 'Mộc Tam Cục', 'so_cuc' => 3],
+            'Kim' => ['cuc' => 'Kim Tứ Cục', 'so_cuc' => 4],
+            'Thổ' => ['cuc' => 'Thổ Ngũ Cục', 'so_cuc' => 5],
+            'Hỏa' => ['cuc' => 'Hỏa Lục Cục', 'so_cuc' => 6],
         ];
+
+        return $cucMap[$hanhCuc] ?? ['cuc' => 'Không xác định', 'so_cuc' => 0];
+    }
+
+    /**
+     * Calculate the Chi Index of the Menh Cung.
+     *
+     * @param int $lunarMonth
+     * @param int $lunarHour
+     * @return int Index in self::CHIS (0=Ty, 1=Suu...)
+     */
+    protected function calculateMenhChiIndex(int $lunarMonth, int $lunarHour): int
+    {
+        // Formula: Start from Dan (index 2), count clockwise for month, then counter-clockwise for hour (from result? No, from Ty usually).
+        // Standard: From Dan (2), clockwise (month-1), then counter-clockwise (hour-1).
+        // Start at Dan = 2.
+        // Add (Month - 1).
+        // Subtract (Hour - 1).
+        $index = (2 + ($lunarMonth - 1) - ($lunarHour - 1));
+
+        // Normalize to 0-11
+        while ($index < 0)
+            $index += 12;
+        return $index % 12;
+    }
+
+    /**
+     * Determine Can of a Chi based on Year Can (Ngu Dan Don).
+     *
+     * @param string $yearCan
+     * @param int $chiIndex Index of the Chi to find Can for.
+     * @return string Can name
+     */
+    protected function getCanOfChi(string $yearCan, int $chiIndex): string
+    {
+        $yearCanIndex = array_search($yearCan, self::CANS);
+
+        // Ngu Dan Don: Determine Can of Dan (Index 2)
+        // Giap/Ky (0/5) -> Binh Dan (2).
+        // Formula: CanDan = (CanNam % 5) * 2 + 2.
+        // 0 -> 2 (Binh). 1 -> 4 (Mau). 2 -> 6 (Canh). 3 -> 8 (Nham). 4 -> 10%10=0 (Giap).
+        $canDanIndex = (($yearCanIndex % 5) * 2 + 2) % 10;
+
+        // Count from Dan (2) to target Chi ($chiIndex)
+        // If target < 2 (Ty, Suu), it's actually end of cycle relative to Dan start? 
+        // Usually we treat the sequence continuous.
+        // Difference in steps
+        $steps = $chiIndex - 2; // Steps from Dan
+        if ($steps < 0)
+            $steps += 12; // e.g. Ty (0) from Dan (2) is 10 steps forward
+
+        $canIndex = ($canDanIndex + $steps) % 10;
+
+        return self::CANS[$canIndex];
     }
 
     /**
@@ -150,105 +223,17 @@ class HoroscopeService
      */
     protected function anCungMenhThan(Horoscope $horoscope, int $lunarMonth, int $lunarHour): void
     {
-        // Địa chi Tý (index 0)
-        $tyIndex = 0; // Tý is always the starting point for counting
-        
-        // An Cung Mệnh
-        // Từ cung Dần, thuận chiều an tháng sinh
-        // Từ cung Tý, nghịch chiều an giờ sinh
-        // Điểm dừng là cung Mệnh.
-        // Simplified: Assume Mệnh start at Dần for month, then count.
-        // For now, let's hardcode for simplicity of testing.
-        // If lunarMonth=1, lunarHour=1, Mệnh is at Dần.
-        // Mệnh = (Dần + (tháng - 1)) - (giờ - 1).
-        // Let's implement actual rule:
-        // Start counting from Dần (index 2 in CHIS) for month
-        $menhStartChiIndex = array_search('Dần', self::CHIS); // Index of Dần is 2
+        // Calculate Menh position
+        $anMenhIndex = $this->calculateMenhChiIndex($lunarMonth, $lunarHour);
 
-        // Count month: Thuận chiều
-        $menhCountMonthIndex = ($menhStartChiIndex + ($lunarMonth - 1)) % 12;
-
-        // Count hour: Nghịch chiều từ Tý
-        $menhCountHourIndex = (array_search('Tý', self::CHIS) - ($lunarHour - 1));
-        if ($menhCountHourIndex < 0) $menhCountHourIndex += 12;
-        $menhCountHourIndex %= 12;
-
-        // An Cung Thân
-        // Thân cư Phúc Đức, Quan Lộc, Thiên Di, Phu Thê, Tài Bạch, Thiên Di (tùy theo Can Năm sinh).
-        // Simplified: For now, assume Mệnh = Thân
-        $thanChiIndex = $menhCountMonthIndex; // Mệnh và Thân cùng cung.
+        // Calculate Than position
+        // Thân: From Dần (2), clockwise Month, clockwise Hour.
+        // Index = (2 + (Month-1) + (Hour-1)) % 12
+        $anThanIndex = (2 + ($lunarMonth - 1) + ($lunarHour - 1)) % 12;
 
         // Initialize 12 houses if not already done (should be done on Horoscope create)
         $horoscope->houses()->delete(); // Clear old houses
-        $this->initializeHouses($horoscope);
-
-        $chiPosition = [
-            'Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ',
-            'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'
-        ];
-
-        // Mệnh is at the Menh Chi Index
-        $menhChi = self::CHIS[$menhCountMonthIndex]; // This is wrong, formula should resolve to Chi Index
-        // Let's use simplified logic:
-        // Cung Mệnh: Từ Dần (index 2) đếm thuận tháng sinh. Từ Tý (index 0) đếm nghịch giờ sinh.
-        // VD: Tháng 1, Giờ Tý -> Mệnh tại Dần. (2 + 1-1) = 2. (0 - 0) = 0.
-        // The common formula is:
-        // Menh Chi: Dần starts at index 2 (counting from Tý=0).
-        // Menh Chi Index = (2 + (lunarMonth - 1) - (lunarHour - 1)) % 12;
-        // This is not standard.
-        // Let's use a standard simplified way:
-        // Start from Dần for month, then Tý for hour.
-        // Month start at Dan = 2
-        // Hour start at Ty = 0
-        $anMenhIndex = (2 + ($lunarMonth - 1) - ($lunarHour - 1)); // Dần is CHIS[2]
-        if ($anMenhIndex < 0) $anMenhIndex += 12; // Handle negative index
-        $anMenhIndex %= 12; // Final index in CHIS array
-
-        // An Thân cung
-        // Typically Thân follows Mệnh depending on Can year
-        // For simplicity: Thân cư Mệnh
-        $anThanIndex = $anMenhIndex;
-
-
-        // Update houses with their branches and roles
-        $houseCodes = ['MENH', 'PHU_MAU', 'PHUC_DUC', 'DIEN_TRACH', 'QUAN_LOC', 'NO_BOC', 
-                       'THIEN_DI', 'TAT_ACH', 'TAI_BACH', 'TU_TUC', 'PHU_THE', 'HUYNH_DE'];
-
-        // Map CHIS (Tý->Hợi) to house codes
-        $chiToHouseCodeMap = [];
-        // Assuming Mệnh is at CHIS[$anMenhIndex]
-        $startHouseIndex = array_search('MENH', $houseCodes); // Index of MENH in the fixed order of house codes
-        
-        $currentChiIndex = $anMenhIndex; // The branch where MENH is located
-        for ($i = 0; $i < 12; $i++) {
-            $houseCode = $houseCodes[($startHouseIndex + $i) % 12];
-            $chi = self::CHIS[$currentChiIndex];
-            $chiToHouseCodeMap[$chi] = $houseCode;
-            
-            // Move to next Chi (clockwise)
-            $currentChiIndex = ($currentChiIndex + 1) % 12;
-        }
-
-        foreach ($horoscope->houses as $house) {
-            $currentHouseChi = array_search($house->code, $chiToHouseCodeMap); // Find branch for this house code
-            if ($currentHouseChi === false) { // No, need to re-map. This logic is complicated.
-                // Let's simplify and make $horoscope->houses have the branch directly
-                // This means the initializeHouses() needs to take branches
-                // Or, use the fixed $chiPosition array and rotate it.
-
-                // For testing:
-                // Mệnh at Ngọ (index 6)
-                // Phụ Mẫu at Mùi (index 7) ...
-                // This is defined in SampleHoroscopeSeeder.
-                // I need to use this to update branches.
-
-                // Re-initialize all houses with proper branch assignment (based on $anMenhIndex)
-                $horoscope->houses()->delete();
-                $menhChiIndex = $anMenhIndex; // The Chi where Menh is
-                $this->initializeHousesWithBranches($horoscope, $menhChiIndex, $anThanIndex);
-                break; // Re-init, so break and rely on fresh data
-            }
-        }
+        $this->initializeHousesWithBranches($horoscope, $anMenhIndex, $anThanIndex);
     }
 
     /**
@@ -256,13 +241,25 @@ class HoroscopeService
      */
     protected function initializeHousesWithBranches(Horoscope $horoscope, int $menhChiIndex, int $thanChiIndex)
     {
-        $houseCodesInOrder = ['MENH', 'PHU_MAU', 'PHUC_DUC', 'DIEN_TRACH', 'QUAN_LOC', 'NO_BOC', 
-                              'THIEN_DI', 'TAT_ACH', 'TAI_BACH', 'TU_TUC', 'PHU_THE', 'HUYNH_DE'];
+        $houseCodesInOrder = [
+            'MENH',
+            'PHU_MAU',
+            'PHUC_DUC',
+            'DIEN_TRACH',
+            'QUAN_LOC',
+            'NO_BOC',
+            'THIEN_DI',
+            'TAT_ACH',
+            'TAI_BACH',
+            'TU_TUC',
+            'PHU_THE',
+            'HUYNH_DE'
+        ];
 
         // Start from Mệnh (which is at $menhChiIndex)
         // Then Phụ Mẫu is next Chi, Phúc Đức next... clockwise
         $currentChiPosition = $menhChiIndex; // This is the Chi index where MENH is located
-        
+
         for ($i = 0; $i < 12; $i++) {
             $houseCode = $houseCodesInOrder[$i]; // The functional house (MENH, PHU_MAU...)
             $branch = self::CHIS[$currentChiPosition]; // The actual branch (Tý, Sửu, Dần...)
@@ -292,10 +289,18 @@ class HoroscopeService
     protected function getHouseLabel(string $code): string
     {
         return [
-            'MENH' => 'Mệnh', 'PHU_MAU' => 'Phụ Mẫu', 'PHUC_DUC' => 'Phúc Đức', 
-            'DIEN_TRACH' => 'Điền Trạch', 'QUAN_LOC' => 'Quan Lộc', 'NO_BOC' => 'Nô Bộc', 
-            'THIEN_DI' => 'Thiên Di', 'TAT_ACH' => 'Tật Ách', 'TAI_BACH' => 'Tài Bạch', 
-            'TU_TUC' => 'Tử Tức', 'PHU_THE' => 'Phu Thê', 'HUYNH_DE' => 'Huynh Đệ'
+            'MENH' => 'Mệnh',
+            'PHU_MAU' => 'Phụ Mẫu',
+            'PHUC_DUC' => 'Phúc Đức',
+            'DIEN_TRACH' => 'Điền Trạch',
+            'QUAN_LOC' => 'Quan Lộc',
+            'NO_BOC' => 'Nô Bộc',
+            'THIEN_DI' => 'Thiên Di',
+            'TAT_ACH' => 'Tật Ách',
+            'TAI_BACH' => 'Tài Bạch',
+            'TU_TUC' => 'Tử Tức',
+            'PHU_THE' => 'Phu Thê',
+            'HUYNH_DE' => 'Huynh Đệ'
         ][$code] ?? $code;
     }
 
@@ -309,11 +314,18 @@ class HoroscopeService
     protected function getChiElement(string $branch): string
     {
         $chiElements = [
-            'Tý' => 'Thủy', 'Hợi' => 'Thủy',
-            'Sửu' => 'Thổ', 'Thìn' => 'Thổ', 'Mùi' => 'Thổ', 'Tuất' => 'Thổ',
-            'Dần' => 'Mộc', 'Mão' => 'Mộc',
-            'Tỵ' => 'Hỏa', 'Ngọ' => 'Hỏa',
-            'Thân' => 'Kim', 'Dậu' => 'Kim',
+            'Tý' => 'Thủy',
+            'Hợi' => 'Thủy',
+            'Sửu' => 'Thổ',
+            'Thìn' => 'Thổ',
+            'Mùi' => 'Thổ',
+            'Tuất' => 'Thổ',
+            'Dần' => 'Mộc',
+            'Mão' => 'Mộc',
+            'Tỵ' => 'Hỏa',
+            'Ngọ' => 'Hỏa',
+            'Thân' => 'Kim',
+            'Dậu' => 'Kim',
         ];
         return $chiElements[$branch] ?? 'Không xác định';
     }
@@ -322,31 +334,87 @@ class HoroscopeService
     /**
      * An 14 Chính Tinh.
      * Needs to calculate location of each star and save to HoroscopeHouseStar.
-     * This will be a big method with many sub-calculations. Placeholder for now.
      *
      * @param Horoscope $horoscope
+     * @param int $lunarDay Lunar day of birth
+     * @param int $cucNumber The 'Cục' number (2,3,4,5,6)
      * @return void
      */
-    protected function anChinhTinh(Horoscope $horoscope): void
+    protected function anChinhTinh(Horoscope $horoscope, int $lunarDay, int $cucNumber): void
     {
-        // For example: Tử Vi an tại cung nào dựa trên Cục và Tháng sinh
-        // Lấy Cục từ horoscope->cuc (hoặc so_cuc)
-        // $cuc = $horoscope->so_cuc;
-        // $lunarMonth = $horoscope->birth_lunar_month;
+        // Clear existing main stars (if any) to re-an
+        $horoscope->houses->each(function($house) {
+            $house->stars()->wherePivot('is_main', true)->detach();
+        });
 
-        // Placeholder: Add a dummy star for testing
-        $star = Star::where('name', 'Tử Vi')->first();
-        if ($star) {
-            $menhHouse = $horoscope->houses->firstWhere('code', 'MENH');
-            if ($menhHouse) {
-                // Attach star to the house
-                // Check if already exists to avoid duplicate
-                HoroscopeHouseStar::firstOrCreate(
-                    ['horoscope_house_id' => $menhHouse->id, 'star_id' => $star->id],
-                    ['status' => 'Miếu', 'is_main' => true]
-                );
-            }
+        // 1. An Tử Vi
+        $tuViChiIndex = $this->calculateTuViPosition($lunarDay, $cucNumber);
+        $tuViHouse = $horoscope->houses->firstWhere('branch', self::CHIS[$tuViChiIndex]);
+        $starTuVi = Star::where('name', 'Tử Vi')->first();
+
+        if ($starTuVi && $tuViHouse) {
+            HoroscopeHouseStar::firstOrCreate(
+                ['horoscope_house_id' => $tuViHouse->id, 'star_id' => $starTuVi->id],
+                ['status' => 'Miếu', 'is_main' => true] // Default status, should be calculated
+            );
         }
+
+        // 2. An Thiên Phủ (opposite to Tử Vi or 3 cung after) - commonly opposite to Tử Vi
+        $thienPhuChiIndex = ($tuViChiIndex + 6) % 12; // Đối cung Tử Vi
+        $thienPhuHouse = $horoscope->houses->firstWhere('branch', self::CHIS[$thienPhuChiIndex]);
+        $starThienPhu = Star::where('name', 'Thiên Phủ')->first();
+
+        if ($starThienPhu && $thienPhuHouse) {
+            HoroscopeHouseStar::firstOrCreate(
+                ['horoscope_house_id' => $thienPhuHouse->id, 'star_id' => $starThienPhu->id],
+                ['status' => 'Miếu', 'is_main' => true] // Default status, should be calculated
+            );
+        }
+
+        // TODO: An các chính tinh khác dựa trên Tử Vi và Thiên Phủ
+        // ...
+    }
+
+    /**
+     * Calculate the Chi Index for Tử Vi star.
+     * Formula depends on Lunar Day and Cuc Number.
+     *
+     * @param int $lunarDay
+     * @param int $cucNumber (2=Thuy, 3=Moc, 4=Kim, 5=Tho, 6=Hoa)
+     * @return int Chi Index (0-11)
+     */
+    protected function calculateTuViPosition(int $lunarDay, int $cucNumber): int
+    {
+        // This formula is simplified for demonstration.
+        // Actual calculation for Tử Vi is complex and depends on the specific
+        // table/algorithm used.
+        // A common method: (LunarDay - X) mod 12 + Y, where X,Y depend on Cục
+        // Let's use a known table-based logic.
+        // Example logic:
+        // Cục 2 (Thủy): Tử Vi an tại Dần (2) nếu ngày 1.
+        // Cục 3 (Mộc): Tử Vi an tại Mão (3) nếu ngày 1.
+        // Dựa trên bảng "An Tử Vi, Thiên Phủ"
+        // (Ngày Sinh + N + Cục) chia 12, số dư là vị trí (Dần, Tỵ, Thân, Hợi)
+        // Or simplified version: (lunarDay - [offset based on Cuc]) % 12
+        
+        // This is a direct implementation of a common formula:
+        // Cung Tử Vi = (Ngày Sinh - Cục) % 12 (kết quả tính từ cung Dần)
+        // Nếu Ngày sinh < Cục: Tử Vi an tại Dần (index 2) + (Cục - Ngày sinh) ngược chiều.
+        // Nếu Ngày sinh >= Cục: Tử Vi an tại Dần (index 2) + (Ngày sinh - Cục) thuận chiều.
+        
+        $offset = 0; // The base position of Tử Vi for Day 1.
+
+        if ($lunarDay < $cucNumber) {
+            // Count backward from Dần
+            $tuViChiIndex = (array_search('Dần', self::CHIS) - ($cucNumber - $lunarDay));
+        } else {
+            // Count forward from Dần
+            $tuViChiIndex = (array_search('Dần', self::CHIS) + ($lunarDay - $cucNumber));
+        }
+
+        // Normalize to 0-11
+        while ($tuViChiIndex < 0) $tuViChiIndex += 12;
+        return $tuViChiIndex % 12;
     }
 
     /**

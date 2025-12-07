@@ -133,15 +133,21 @@ class CalendarService
         $lunar = $this->toLunar($solarDate);
         $canChi = $this->getCanChi($lunar);
         
+        // Calculate Chi Hour Index again or extract from getCanChi? 
+        // getCanChi doesn't return indices.
+        // Re-calculate quickly:
+        $chiHourIndex = floor(($lunar->hour + 1) / 2) % 12;
+
         return [
             'lunar_year' => $lunar->year,
             'lunar_month' => $lunar->month,
             'lunar_day' => $lunar->day,
-            'is_leap' => $lunar->leap, // Check if property 'leap' or 'isLeapMonth' exists
+            'is_leap' => $lunar->leap, 
             'can_chi_year' => $canChi['year'],
             'can_chi_month' => $canChi['month'],
             'can_chi_day' => $canChi['day'],
             'can_chi_hour' => $canChi['hour'],
+            'chi_hour_index' => $chiHourIndex, // 0=Ty, 1=Suu...
         ];
     }
 }

@@ -12,6 +12,7 @@ use App\Services\Horoscope\HoroscopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -47,20 +48,21 @@ class HoroscopeController extends Controller
     public function store(StoreHoroscopeRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        
-        // Combine date and time
-        $birthGregorian = Carbon::parse($data['birth_date'] . ' ' . $data['birth_time']);
-        
+
+        // Combine date and time with timezone
+        $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
+        $birthGregorian = Carbon::createFromFormat('Y-m-d H:i', $data['birth_date'] . ' ' . $data['birth_time'], $timezone);
+
         // Generate slug
         $slug = Str::slug($data['name']) . '-' . $birthGregorian->format('YmdHi');
-        
+
         $horoscope = Horoscope::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'slug' => $slug,
             'name' => $data['name'],
             'gender' => $data['gender'],
             'birth_gregorian' => $birthGregorian,
-            'timezone' => $data['timezone'] ?? 'Asia/Ho_Chi_Minh',
+            'timezone' => $timezone,
             'view_year' => now()->year,
         ]);
 
@@ -69,7 +71,7 @@ class HoroscopeController extends Controller
             $horoscope,
             $birthGregorian,
             $data['gender'],
-            $data['timezone'] ?? 'Asia/Ho_Chi_Minh'
+            $timezone
         );
 
         return redirect()->route('admin.horoscopes.edit', $horoscope)
@@ -91,7 +93,7 @@ class HoroscopeController extends Controller
     {
         $horoscope->load(['houses.stars', 'meta']);
         $allStars = Star::orderBy('name')->get();
-        
+
         return view('admin.horoscopes.edit', compact('horoscope', 'allStars'));
     }
 
@@ -101,15 +103,16 @@ class HoroscopeController extends Controller
     public function update(UpdateHoroscopeRequest $request, Horoscope $horoscope): RedirectResponse
     {
         $data = $request->validated();
-        
-        // Combine date and time
-        $birthGregorian = Carbon::parse($data['birth_date'] . ' ' . $data['birth_time']);
-        
+
+        // Combine date and time with timezone
+        $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
+        $birthGregorian = Carbon::createFromFormat('Y-m-d H:i', $data['birth_date'] . ' ' . $data['birth_time'], $timezone);
+
         $horoscope->update([
             'name' => $data['name'],
             'gender' => $data['gender'],
             'birth_gregorian' => $birthGregorian,
-            'timezone' => $data['timezone'] ?? 'Asia/Ho_Chi_Minh',
+            'timezone' => $timezone,
         ]);
 
         // Re-generate Horoscope on update
@@ -117,7 +120,7 @@ class HoroscopeController extends Controller
             $horoscope,
             $birthGregorian,
             $data['gender'],
-            $data['timezone'] ?? 'Asia/Ho_Chi_Minh'
+            $timezone
         );
 
         return redirect()->route('admin.horoscopes.index')
@@ -134,4 +137,3 @@ class HoroscopeController extends Controller
             ->with('success', 'Đã xóa lá số.');
     }
 }
-
