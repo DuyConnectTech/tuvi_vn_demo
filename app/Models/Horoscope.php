@@ -129,4 +129,15 @@ class Horoscope extends Model
 	{
 		return $this->hasMany(HoroscopeTransaction::class);
 	}
+
+    // Alias for convenience
+    public function houses()
+    {
+        return $this->hasMany(HoroscopeHouse::class);
+    }
+
+    public function meta()
+    {
+        return $this->hasOne(HoroscopeMetum::class);
+    }
 }

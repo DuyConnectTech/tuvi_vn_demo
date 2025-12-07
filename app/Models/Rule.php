@@ -55,4 +55,9 @@ class Rule extends Model
 	{
 		return $this->hasMany(RuleCondition::class);
 	}
+
+    public function conditions()
+    {
+        return $this->hasMany(RuleCondition::class);
+    }
 }
