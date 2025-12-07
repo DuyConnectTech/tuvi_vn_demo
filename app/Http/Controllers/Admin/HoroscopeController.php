@@ -28,9 +28,18 @@ class HoroscopeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $horoscopes = Horoscope::latest()->paginate(20);
+        $query = Horoscope::with('user')->latest();
+
+        if ($request->has('search') && $request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('slug', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $horoscopes = $query->paginate(20);
         return view('admin.horoscopes.index', compact('horoscopes'));
     }
 
@@ -89,20 +98,21 @@ class HoroscopeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-        public function edit(Horoscope $horoscope): View
-        {
-            $horoscope->load(['houses.stars', 'meta', 'tags']);
-            $allStars = Star::orderBy('name')->get();
-            $allTags = \App\Models\Tag::all();
-            
-            return view('admin.horoscopes.edit', compact('horoscope', 'allStars', 'allTags'));
-        }
+    public function edit(Horoscope $horoscope): View
+    {
+        $horoscope->load(['houses.stars', 'meta', 'tags']);
+        $allStars = Star::orderBy('name')->get();
+        $allTags = \App\Models\Tag::all();
+        
+        return view('admin.horoscopes.edit', compact('horoscope', 'allStars', 'allTags'));
+    }
+
     /**
      * Update the specified resource in storage.
      */
-        public function update(UpdateHoroscopeRequest $request, Horoscope $horoscope): RedirectResponse
-        {
-            $data = $request->validated();
+    public function update(UpdateHoroscopeRequest $request, Horoscope $horoscope): RedirectResponse
+    {
+        $data = $request->validated();
             
             // Combine date and time with timezone
             $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
@@ -124,12 +134,13 @@ class HoroscopeController extends Controller
                 $horoscope->tags()->detach();
             }
     
-            // Re-generate Horoscope on update        $this->horoscopeService->generateHoroscope(
-            $horoscope,
-            $birthGregorian,
-            $data['gender'],
-            $timezone
-        );
+            // Re-generate Horoscope on update
+            $this->horoscopeService->generateHoroscope(
+                $horoscope,
+                $birthGregorian,
+                $data['gender'],
+                $timezone
+            );
 
         return redirect()->route('admin.horoscopes.index')
             ->with('success', 'Cập nhật thông tin lá số và tính toán lại thành công.');

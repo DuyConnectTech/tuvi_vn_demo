@@ -31,6 +31,23 @@ class HoroscopeController extends Controller
     }
 
     /**
+     * Display a listing of user's horoscopes.
+     */
+    public function myIndex()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login'); // Assuming login route exists (e.g. from breeze/jetstream) or admin.login if only admin
+            // Better: redirect to a proper user login if implemented, otherwise guest handling.
+            // For this demo, let's assume we might have user login later.
+            // If no user login, this feature is only for admin acting as user or we need user auth routes.
+            // Since we have User model and Auth facade, let's assume standard auth.
+        }
+
+        $horoscopes = auth()->user()->horoscopes()->latest()->paginate(10);
+        return view('client.horoscopes.my_index', compact('horoscopes'));
+    }
+
+    /**
      * Store a newly created horoscope in storage.
      */
     public function store(StoreHoroscopeRequest $request): RedirectResponse

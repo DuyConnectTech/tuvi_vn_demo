@@ -14,6 +14,9 @@ Route::post('/lap-la-so', [\App\Http\Controllers\Client\HoroscopeController::cla
 // Public Horoscope View
 Route::get('/la-so/{slug}', [\App\Http\Controllers\Client\HoroscopeController::class, 'show'])->name('client.horoscopes.show');
 
+// User Horoscopes
+Route::get('/la-so-cua-toi', [\App\Http\Controllers\Client\HoroscopeController::class, 'myIndex'])->name('client.horoscopes.index')->middleware('auth');
+
 // Test Route (keep for reference or remove later)
 Route::get('/test-calendar', function () {
     $s = new \App\Services\Horoscope\CalendarService();

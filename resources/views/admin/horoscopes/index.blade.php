@@ -23,6 +23,14 @@
                 <div class="card-header">
                     <h3 class="card-title">Danh sách Lá số</h3>
                     <div class="card-tools">
+                        <form action="{{ route('admin.horoscopes.index') }}" method="GET" class="d-inline-block mr-2">
+                            <div class="input-group input-group-sm" style="width: 200px;">
+                                <input type="text" name="search" class="form-control float-right" placeholder="Tìm kiếm..." value="{{ request('search') }}">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
                         <a href="{{ route('admin.horoscopes.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> Tạo Lá số mới
                         </a>
@@ -34,6 +42,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Họ tên</th>
+                                <th>Người tạo</th>
                                 <th>Giới tính</th>
                                 <th>Ngày sinh (DL)</th>
                                 <th>Năm xem</th>
@@ -48,6 +57,13 @@
                                         <span class="font-weight-bold">{{ $item->name }}</span>
                                         <br>
                                         <small class="text-muted">{{ $item->slug }}</small>
+                                    </td>
+                                    <td>
+                                        @if($item->user)
+                                            <a href="{{ route('admin.users.edit', $item->user) }}">{{ $item->user->name }}</a>
+                                        @else
+                                            <span class="text-muted">Guest</span>
+                                        @endif
                                     </td>
                                     <td>{{ $item->gender == 'male' ? 'Nam' : 'Nữ' }}</td>
                                     <td>{{ $item->birth_gregorian->format('d/m/Y H:i') }}</td>
