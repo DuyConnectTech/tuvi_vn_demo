@@ -108,6 +108,11 @@ class Horoscope extends Model
         return $this->belongsToMany(Tag::class, 'chart_tags', 'horoscope_id', 'tag_id')->withTimestamps();
     }
 
+    public function readings()
+    {
+        return $this->hasMany(HoroscopeReading::class);
+    }
+
 	public function chart_four_pillars()
 	{
 		return $this->hasMany(ChartFourPillar::class);

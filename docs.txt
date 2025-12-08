@@ -266,7 +266,9 @@ ví dụ
 
 đây là thông tin Huynh đệ của tuvi.vn
 
-K.Tỵ | Huynh Đệ | 15
+-------
+
+K.Tỵ | Huynh Đệ      | 15
 -Hoả | -Thiên Cơ (V) | Th.7
 
 Địa Giải : Địa Không (Đ)
@@ -277,11 +279,21 @@ L.Hóa Lộc : Cô Thần
             Tang Môn
             L.Thái Tuế
 
+ĐV.PHỤ      Lâm Quan    LN.DI
+
+-------
 
 đây là thông tin của localhost 
-K.Tỵ | Huynh Đệ | 
--Hoả | --- | Th.12
 
-Thiên Mã (Đ) : Đà La (Hãm) 
-Lực Sỹ : Địa Kiếp
+-------
+K.Tỵ | Huynh Đệ | 15
+-Hoả | -------- | Th.12
+
+Thiên Mã : Đà La (Hãm) 
+Trang Môn : Địa Kiếp
 Lâm Quan
+
+ĐV.--       Lâm Quan       LN.--
+Tỵ
+
+-------

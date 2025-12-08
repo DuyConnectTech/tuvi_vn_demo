@@ -13,13 +13,14 @@
         
         /* Top: Can Chi Cung + Tên Cung + Chính Tinh */
         .cung-top { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 5px; margin-bottom: 5px; }
+        .view-cung-top {    display: flex; justify-content: space-between; padding: 8px 5px 0 5px;}
         .text-dia-chi { font-weight: bold; font-size: 14px; text-transform: uppercase; color: #666; }
         .text-ten-cung { font-weight: bold; font-size: 16px; color: #a21313; display: inline-block; padding: 2px 8px; border-radius: 3px; margin: 2px 0; }
         .text-ten-cung.menh { background: #a21313; color: #fff; } /* Mệnh */
         .text-ten-cung.than { background: #d4a017; color: #000; } /* Thân */
         .text-ten-cung.binh-hoa { background: #ccc; color: #000; } /* Các cung khác */
         
-        .chinh-tinh { margin-top: 5px; }
+        .chinh-tinh { text-align: center; font-weight: 700; }
         .sao-chinh { font-weight: bold; font-size: 15px; display: block; }
         .sao-chinh.Miếu, .sao-chinh.Vượng { color: #d00; } /* Miếu - Đỏ đậm */
         .sao-chinh.Đắc { color: #009130; } /* Đắc - Xanh */
@@ -155,13 +156,13 @@
                 {{-- Row 1: Tỵ Ngọ Mùi Thân --}}
                 <tr>
                     @foreach(['Tỵ', 'Ngọ', 'Mùi', 'Thân'] as $branch)
-                        @include('client.horoscopes._cung', ['house' => $housesByBranch[$branch] ?? null, 'horoscope' => $horoscope, 'branch' => $branch])
+                        <x-horoscope.cung :house="$housesByBranch[$branch] ?? null" :horoscope="$horoscope" :branch="$branch" />
                     @endforeach
                 </tr>
                 
                 {{-- Row 2: Thìn - Thiên Bàn - Dậu --}}
                 <tr>
-                    @include('client.horoscopes._cung', ['house' => $housesByBranch['Thìn'] ?? null, 'horoscope' => $horoscope, 'branch' => 'Thìn'])
+                    <x-horoscope.cung :house="$housesByBranch['Thìn'] ?? null" :horoscope="$horoscope" branch="Thìn" />
                     
                     <td colspan="2" rowspan="2" class="thien-ban" data-menh-chi-index="{{ $horoscope->meta->menh_chi_index ?? 0 }}">
                         <div class="view-con-giap-la-so {{ 'list-line-' . ($horoscope->meta->menh_chi_index ?? 0) }}"></div>
@@ -222,24 +223,61 @@
                         </div>
                     </td>
 
-                    @include('client.horoscopes._cung', ['house' => $housesByBranch['Dậu'] ?? null, 'horoscope' => $horoscope, 'branch' => 'Dậu'])
+                    <x-horoscope.cung :house="$housesByBranch['Dậu'] ?? null" :horoscope="$horoscope" branch="Dậu" />
                 </tr>
 
                 {{-- Row 3: Mão - Thiên Bàn - Tuất --}}
                 <tr>
-                    @include('client.horoscopes._cung', ['house' => $housesByBranch['Mão'] ?? null, 'horoscope' => $horoscope, 'branch' => 'Mão'])
+                    <x-horoscope.cung :house="$housesByBranch['Mão'] ?? null" :horoscope="$horoscope" branch="Mão" />
                     {{-- Thiên bàn occupies here --}}
-                    @include('client.horoscopes._cung', ['house' => $housesByBranch['Tuất'] ?? null, 'horoscope' => $horoscope, 'branch' => 'Tuất'])
+                    <x-horoscope.cung :house="$housesByBranch['Tuất'] ?? null" :horoscope="$horoscope" branch="Tuất" />
                 </tr>
 
                 {{-- Row 4: Dần Sửu Tý Hợi --}}
                 <tr>
                     @foreach(['Dần', 'Sửu', 'Tý', 'Hợi'] as $branch)
-                        @include('client.horoscopes._cung', ['house' => $housesByBranch[$branch] ?? null, 'horoscope' => $horoscope, 'branch' => $branch])
+                        <x-horoscope.cung :house="$housesByBranch[$branch] ?? null" :horoscope="$horoscope" :branch="$branch" />
                     @endforeach
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    {{-- Luận Giải Section --}}
+    <div class="mt-5">
+        <h3 class="text-center text-danger font-weight-bold mb-4" style="color: #a21313;">LUẬN GIẢI CHI TIẾT</h3>
+        
+        @if($horoscope->readings->isNotEmpty())
+            <div class="row">
+                @foreach($horoscope->readings as $reading)
+                    <div class="col-md-12 mb-3">
+                        <div class="card border-0 shadow-sm" style="background-color: #fffdf5; border-left: 4px solid #a21313 !important;">
+                            <div class="card-body">
+                                <h5 class="card-title font-weight-bold" style="color: #a21313;">
+                                    @php
+                                        $houseLabel = match($reading->house_code) {
+                                            'MENH' => 'Cung Mệnh', 'PHU_MAU' => 'Cung Phụ Mẫu', 'PHUC_DUC' => 'Cung Phúc Đức',
+                                            'DIEN_TRACH' => 'Cung Điền Trạch', 'QUAN_LOC' => 'Cung Quan Lộc', 'NO_BOC' => 'Cung Nô Bộc',
+                                            'THIEN_DI' => 'Cung Thiên Di', 'TAT_ACH' => 'Cung Tật Ách', 'TAI_BACH' => 'Cung Tài Bạch',
+                                            'TU_TUC' => 'Cung Tử Tức', 'PHU_THE' => 'Cung Phu Thê', 'HUYNH_DE' => 'Cung Huynh Đệ',
+                                            default => 'Tổng Quan'
+                                        };
+                                    @endphp
+                                    {{ $houseLabel }}
+                                </h5>
+                                <div class="card-text text-justify">
+                                    {!! $reading->text !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="alert alert-warning text-center">
+                Chưa có lời giải cho lá số này. Hãy thử cập nhật thông tin hoặc chờ hệ thống xử lý.
+            </div>
+        @endif
     </div>
 </div>
 @endsection

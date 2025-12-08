@@ -5,11 +5,11 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card shadow-lg border-0 rounded-lg mt-4">
                 <div class="card-header bg-danger text-white text-center py-4">
                     <h2 class="font-weight-bold mb-0">LẬP LÁ SỐ TỬ VI</h2>
-                    <p class="mb-0 small">Luận giải chi tiết - Chính xác - Miễn phí</p>
+                    <p class="mb-0 small">Nhập chính xác giờ sinh theo dương lịch để có kết quả chuẩn nhất</p>
                 </div>
                 <div class="card-body p-5">
                     @if ($errors->any())
@@ -27,7 +27,7 @@
                         
                         <div class="form-group">
                             <label for="name" class="font-weight-bold">Họ và tên</label>
-                            <input type="text" class="form-control form-control-lg" id="name" name="name" value="{{ old('name') }}" placeholder="Nhập họ tên đương số" required>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name', 'Tâm Như Lâm') }}" placeholder="Nhập họ tên" required>
                         </div>
 
                         <div class="form-group">
@@ -42,14 +42,71 @@
                             </div>
                         </div>
 
+                        <h5 class="text-secondary mt-4 border-bottom pb-2">Thông tin Ngày Sinh (Dương Lịch)</h5>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label class="font-weight-bold">Ngày</label>
+                                <select class="form-control" name="day">
+                                    @for($i = 1; $i <= 31; $i++)
+                                        <option value="{{ $i }}" {{ old('day', 1) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="font-weight-bold">Tháng</label>
+                                <select class="form-control" name="month">
+                                    @for($i = 1; $i <= 12; $i++)
+                                        <option value="{{ $i }}" {{ old('month', 1) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="font-weight-bold">Năm</label>
+                                <select class="form-control" name="year">
+                                    @for($i = 1950; $i <= 2030; $i++)
+                                        <option value="{{ $i }}" {{ old('year', 2000) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="birth_date" class="font-weight-bold">Ngày sinh (Dương lịch)</label>
-                                <input type="date" class="form-control form-control-lg" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" required>
+                                <label class="font-weight-bold">Giờ sinh (0h - 23h)</label>
+                                <select class="form-control" name="hour">
+                                    @for($i = 0; $i <= 23; $i++)
+                                        <option value="{{ $i }}" {{ old('hour', 12) == $i ? 'selected' : '' }}>{{ $i }} giờ</option>
+                                    @endfor
+                                </select>
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="birth_time" class="font-weight-bold">Giờ sinh</label>
-                                <input type="time" class="form-control form-control-lg" id="birth_time" name="birth_time" value="{{ old('birth_time', '12:00') }}" required>
+                                <label class="font-weight-bold">Phút sinh</label>
+                                <select class="form-control" name="minute">
+                                    @for($i = 0; $i <= 59; $i++)
+                                        <option value="{{ $i }}" {{ old('minute', 30) == $i ? 'selected' : '' }}>{{ $i }} phút</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+
+                        <h5 class="text-secondary mt-4 border-bottom pb-2">Thông tin Xem Hạn</h5>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Năm xem</label>
+                                <select class="form-control" name="view_year">
+                                    @for($y = date('Y') - 10; $y <= date('Y') + 10; $y++)
+                                        <option value="{{ $y }}" {{ old('view_year', 2025) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-bold">Tháng xem (Âm lịch)</label>
+                                <select class="form-control" name="view_month">
+                                    <option value="">-- Cả năm --</option>
+                                    @for($m = 1; $m <= 12; $m++)
+                                        <option value="{{ $m }}" {{ old('view_month') == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                                    @endfor
+                                </select>
                             </div>
                         </div>
 
@@ -62,9 +119,6 @@
                         </div>
                     </form>
                 </div>
-                <div class="card-footer text-center text-muted bg-light py-3">
-                    <small>Hệ thống sử dụng lịch thiên văn chính xác. Hỗ trợ luận giải tự động bằng AI.</small>
-                </div>
             </div>
 
             {{-- History Section (LocalStorage) --}}
@@ -72,11 +126,8 @@
                 <div class="card-header bg-white font-weight-bold">
                     <i class="fas fa-history mr-2"></i> Lịch sử xem lá số
                 </div>
-                <ul class="list-group list-group-flush" id="history-list">
-                    {{-- Items will be added by JS --}}
-                </ul>
+                <ul class="list-group list-group-flush" id="history-list"></ul>
             </div>
-
         </div>
     </div>
 </div>
@@ -88,9 +139,7 @@
     (function() {
         function initApp() {
             var $ = window.jQuery;
-            
             $(document).ready(function() {
-                // 1. Load History
                 loadHistory();
             });
 
@@ -99,7 +148,6 @@
                 if (history.length > 0) {
                     $('#history-card').show();
                     let html = '';
-                    // Show last 5
                     history.slice(0, 5).forEach(item => {
                         html += `<li class="list-group-item d-flex justify-content-between align-items-center">
                                     <a href="/la-so/${item.slug}" class="text-dark font-weight-bold">${item.name}</a>
@@ -111,14 +159,9 @@
             }
         }
 
-        if (window.jQuery) {
-            initApp();
-        } else {
+        if (window.jQuery) { initApp(); } else {
             var checkInterval = setInterval(function() {
-                if (window.jQuery) {
-                    clearInterval(checkInterval);
-                    initApp();
-                }
+                if (window.jQuery) { clearInterval(checkInterval); initApp(); }
             }, 100);
         }
     })();

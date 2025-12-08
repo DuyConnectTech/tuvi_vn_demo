@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\Horoscope\StoreHoroscopeRequest; // Re-use or create new request
+use App\Http\Requests\Admin\Horoscope\StoreHoroscopeRequest;
 use App\Models\Horoscope;
 use App\Services\Horoscope\HoroscopeService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -22,53 +21,57 @@ class HoroscopeController extends Controller
         $this->horoscopeService = $horoscopeService;
     }
 
-    /**
-     * Show the form for creating a new horoscope (Home page).
-     */
     public function create(): View
     {
-        return view('client.index');
+        return view('client.index'); // Changed from welcome to index as per user context
     }
 
-    /**
-     * Display a listing of user's horoscopes.
-     */
-    public function myIndex(): RedirectResponse|View
-    {
-        if (!auth()->check()) {
-            return redirect()->route('login'); // Assuming login route exists (e.g. from breeze/jetstream) or admin.login if only admin
-            // Better: redirect to a proper user login if implemented, otherwise guest handling.
-            // For this demo, let's assume we might have user login later.
-            // If no user login, this feature is only for admin acting as user or we need user auth routes.
-            // Since we have User model and Auth facade, let's assume standard auth.
-        }
-
-        $horoscopes = auth()->user()->horoscopes()->latest()->paginate(10);
-        return view('client.horoscopes.my_index', compact('horoscopes'));
-    }
-
-    /**
-     * Store a newly created horoscope in storage.
-     */
     public function store(StoreHoroscopeRequest $request): RedirectResponse
     {
         $data = $request->validated();
         
-        // Combine date and time with timezone
         $timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
-        $birthGregorian = Carbon::createFromFormat('Y-m-d H:i', $data['birth_date'] . ' ' . $data['birth_time'], $timezone);
         
+        try {
+            // Explicitly create Carbon instance from split fields
+            $birthGregorian = Carbon::create(
+                $data['year'],
+                $data['month'],
+                $data['day'],
+                $data['hour'],
+                $data['minute'],
+                0,
+                $timezone
+            );
+        } catch (\Exception $e) {
+            return back()->withErrors(['dob' => 'Ngày giờ sinh không hợp lệ.']);
+        }
+        
+        // Debug Logging
+        try {
+            $lunarDetails = $this->horoscopeService->getCalendarService()->getLunarDetails($birthGregorian);
+            Log::info('Horoscope Generation Debug:', [
+                'input_solar' => $birthGregorian->format('Y-m-d H:i:s P'),
+                'lunar_output' => $lunarDetails,
+                'view_year' => $data['view_year'],
+                'gender' => $data['gender']
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Horoscope Debug Error: ' . $e->getMessage());
+        }
+
         // Generate slug
-        $slug = Str::slug($data['name']) . '-' . $birthGregorian->format('YmdHi') . '-' . Str::random(4); // Random to avoid collision
+        $slug = Str::slug($data['name']) . '-' . $birthGregorian->format('YmdHi') . '-' . Str::random(4);
         
         $horoscope = Horoscope::create([
-            'user_id' => Auth::id(), // Null if guest
+            'user_id' => auth()->id(),
             'slug' => $slug,
             'name' => $data['name'],
             'gender' => $data['gender'],
             'birth_gregorian' => $birthGregorian,
             'timezone' => $timezone,
-            'view_year' => now()->year,
+            'view_year' => $data['view_year'],
+            'view_month' => $data['view_month'] ?? null,
         ]);
 
         // Generate Horoscope Data
@@ -82,22 +85,26 @@ class HoroscopeController extends Controller
         return redirect()->route('client.horoscopes.show', $slug);
     }
 
-    /**
-     * Display the specified horoscope chart.
-     *
-     * @param string $slug
-     * @return View
-     */
     public function show(string $slug): View
     {
-        // Eager load everything needed for the chart view
         $horoscope = Horoscope::with([
-            'houses.stars', // Stars in houses
-            'meta',         // Meta info (Chu Menh, Chu Than...)
+            'houses.stars',
+            'meta',
+            'readings'
         ])->where('slug', $slug)->firstOrFail();
 
         $housesByBranch = $horoscope->houses->keyBy('branch');
 
         return view('client.horoscopes.show', compact('horoscope', 'housesByBranch'));
+    }
+
+    public function myIndex()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $horoscopes = auth()->user()->horoscopes()->latest()->paginate(10);
+        return view('client.horoscopes.my_index', compact('horoscopes'));
     }
 }

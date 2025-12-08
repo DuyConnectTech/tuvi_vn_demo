@@ -1,33 +1,44 @@
+@props(['house', 'branch', 'horoscope'])
+
 @php
-    $branchIndices = array_flip(['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi']);
+    use App\Enums\Chi;
+
     $currentBranchName = $house->branch ?? $branch;
-    $currentIndex = $branchIndices[$currentBranchName] ?? 0;
-    // Normalize branch for data attribute to match relation codes (ty, suu...)
-    // Manual mapping to ensure match with BranchRelationSeeder keys or Str::slug
-    // BranchRelationSeeder uses: ty, suu, dan, mao, thin, ti, ngo, mui, than, dau, tuat, hoi.
-    // Str::slug('Tý') -> 'ty'. 'Tỵ' -> 'ty'? No, 'ty'. 'Sửu' -> 'suu'. 
-    // Warning: 'Tý' and 'Tỵ' might conflict if just slug. 'ty' vs 'ty'.
-    // Str::slug('Tỵ') is 'ty'. Str::slug('Tý') is 'ty'. -> CONFLICT!
-    
-    // We need a precise map.
-    $branchSlugMap = [
-        'Tý' => 'ty', 'Sửu' => 'suu', 'Dần' => 'dan', 'Mão' => 'mao',
-        'Thìn' => 'thin', 'Tỵ' => 'ti', 'Ngọ' => 'ngo', 'Mùi' => 'mui',
-        'Thân' => 'than', 'Dậu' => 'dau', 'Tuất' => 'tuat', 'Hợi' => 'hoi'
-    ];
-    $branchSlug = $branchSlugMap[$currentBranchName] ?? 'unknown';
+    $chiEnum = Chi::fromLabel($currentBranchName);
+
+    // Fallback to defaults if not found (should not happen with valid data)
+    $currentIndex = $chiEnum ? $chiEnum->value : 0;
+    $branchSlug = $chiEnum ? $chiEnum->slug() : 'unknown';
 @endphp
-<td class="cung" data-branch="{{ $branchSlug }}" data-branch-index="{{ $currentIndex }}" data-relations="{{ json_encode($house->relations ?? []) }}">
-    <div class="cung-view">
+
+<td class="cung" 
+    data-branch="{{ $branchSlug }}" 
+    data-branch-index="{{ $currentIndex }}" 
+    data-relations="{{ json_encode($house->relations ?? []) }}"
+    data-chi="{{ $currentIndex }}"
+    data-cung-full-name="{{ $house->can ?? '' }}.{{ $house->branch ?? $branch }}"
+>
+    <div class="cung-view" id="cung{{ $house->house_order ?? 0 }}">
         @if($house)
+            {{-- Background Con Giap Overlay for the whole cung-view --}}
+            <div class="view-con-giap-la-so {{ strtolower($house->branch) }}"></div>
+
             <div class="cung-top">
-                <div class="view-con-giap-la-so {{ strtolower($house->branch) }}"></div>
                 <div class="view-cung-top">
+                    {{-- Left: Can Chi & Element --}}
                     <div>
-                        <p class="text-dia-chi txt-tiny-mid">{{ $house->branch }}</p>
-                        <p class="text-dia-chi txt-tiny-mid m-b-5">{{ $house->element }}</p>
+                        <p class="text-dia-chi txt-tiny-mid">
+                            {{ $house->can ? mb_substr($house->can, 0, 1) . '.' : '' }}{{ $house->branch }}
+                        </p>
+                        
+                        @php
+                            $isYang = in_array($house->branch, ['Tý', 'Dần', 'Thìn', 'Ngọ', 'Thân', 'Tuất']);
+                            $sign = $isYang ? '+' : '-';
+                        @endphp
+                        <p class="text-dia-chi txt-tiny-mid m-b-5">{{ $sign }}{{ $house->element }}</p>
                     </div>
                     
+                    {{-- Center: House Name & Main Stars --}}
                     <div class="chinh-tinh">
                         <div class="d-flex justify-content-center">
                             <p class="text-sao-chinh-tinh txt-tiny-bold" 
@@ -42,24 +53,29 @@
                         @foreach($house->stars as $star)
                             @if($star->pivot->is_main)
                                 <p class="text-chinh-chinh txt-tiny-bold" style="color: {{ $star->color }}">
-                                    {{ $star->name }} ({{ $star->pivot->status }})
+                                    {{ $sign }}{{ $star->name }} ({{ $star->pivot->status }})
                                 </p>
                             @endif
                         @endforeach
                     </div>
                     
+                    {{-- Right: Dai Van & Month --}}
                     <div class="view-cung-dai-van">
-                        {{-- Đại Vận: Chưa tính chính xác, placeholder --}}
-                        <p class="text-dia-chi txt-tiny-mid text-dai-van-number">--</p>
-                        <p class="text-dia-chi txt-tiny-mid">Th.{{ $house->house_order }}</p>
+                        <p class="text-dia-chi txt-tiny-mid text-dai-van-number">{{ $house->dai_van_start_age ?? '--' }}</p>
+                        <p class="text-dia-chi txt-tiny-mid">Th.--</p> 
                     </div>
                 </div>
             </div>
 
             <div class="cung-middle">
+                @php
+                    $trangSinhSlugs = ['trang-sinh', 'moc-duc', 'quan-doi', 'lam-quan', 'de-vuong', 'suy', 'benh', 'tu', 'mo', 'tuyet', 'thai', 'duong'];
+                    $badStarSlugs = ['da-la', 'kinh-duong', 'dia-khong', 'dia-kiep', 'hoa-tinh', 'linh-tinh', 'hoa-ky', 'tang-mon', 'bach-ho', 'thien-khoc', 'thien-hu', 'co-than', 'qua-tu', 'pha-toai', 'kiep-sat', 'luu-ha', 'thien-hinh'];
+                @endphp
+                
                 <div class="sao-tot">
                     @foreach($house->stars as $star)
-                        @if(!$star->pivot->is_main && in_array($star->group_type, ['cat_tinh', 'phu_tinh', 'tu_hoa']) && $star->slug != 'hoa-ky')
+                        @if(!$star->pivot->is_main && !in_array($star->slug, $badStarSlugs) && !in_array($star->slug, $trangSinhSlugs) && $star->group_type != 'sat_tinh')
                             <div class="txt-tiny text-sao-xau-tot" style="color: {{ $star->color }}">
                                 {{ $star->name }}
                                 @if($star->pivot->status != 'Bình') <small>({{ $star->pivot->status }})</small> @endif
@@ -67,9 +83,10 @@
                         @endif
                     @endforeach
                 </div>
+                
                 <div class="sao-xau">
                     @foreach($house->stars as $star)
-                        @if(!$star->pivot->is_main && ($star->group_type == 'sat_tinh' || $star->slug == 'hoa-ky'))
+                        @if(!$star->pivot->is_main && (in_array($star->slug, $badStarSlugs) || $star->group_type == 'sat_tinh') && !in_array($star->slug, $trangSinhSlugs))
                             <div class="txt-tiny text-sao-xau-tot font-weight-bold" style="color: {{ $star->color }}">
                                 {{ $star->name }}
                                 @if($star->pivot->status != 'Bình') <small>({{ $star->pivot->status }})</small> @endif
@@ -79,21 +96,18 @@
                 </div>
             </div>
 
+            <div class="cung-middle-tu-hoa-phai" style="display: none">
+                {{-- Placeholder for Tu Hoa Phai --}}
+            </div>
+
             <div class="cung-bottom">
-                {{-- Vòng Tràng Sinh --}}
-                @php
-                    $trangSinhStar = $house->stars->firstWhere(function($star) {
-                        return str_contains($star->name, 'Tràng Sinh') || str_contains($star->name, 'Mộc Dục') ||
-                               str_contains($star->name, 'Quan Đới') || str_contains($star->name, 'Lâm Quan') ||
-                               str_contains($star->name, 'Đế Vượng') || str_contains($star->name, 'Suy') ||
-                               str_contains($star->name, 'Bệnh') || str_contains($star->name, 'Tử') ||
-                               str_contains($star->name, 'Mộ') || str_contains($star->name, 'Tuyệt') ||
-                               str_contains($star->name, 'Thai') || str_contains($star->name, 'Dưỡng');
-                    });
-                @endphp
-                
                 <span class="text-tieu-van txt-tiny">ĐV.--</span>
                 
+                @php
+                    $trangSinhStar = $house->stars->firstWhere(function($star) use ($trangSinhSlugs) {
+                        return in_array($star->slug, $trangSinhSlugs);
+                    });
+                @endphp
                 @if($trangSinhStar)
                     <span class="txt-tiny-mid white-space-nowrap" style="color: #000">{{ $trangSinhStar->name }}</span>
                 @else
@@ -103,7 +117,8 @@
                 <span class="text-tieu-van txt-tiny">LN.--</span>
             </div>
 
-            <div class="khoi-tieu-han-bottom txt-tiny">
+            {{-- Tên Chi cung ở đáy --}}
+            <div class="khoi-tieu-han-bottom txt-tiny" style="text-align: center; margin-top: 2px;">
                 <span>{{ $branch }}</span>
             </div>
 

@@ -102,6 +102,34 @@ class StarSeeder extends Seeder
             ['name' => 'Thai', 'slug' => 'thai', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
             ['name' => 'Dưỡng', 'slug' => 'duong', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Tràng Sinh'],
 
+            // --- 9. VÒNG BÁC SỸ ---
+            ['name' => 'Bác Sỹ', 'slug' => 'bac-sy', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Đứng đầu vòng Bác Sỹ'],
+            ['name' => 'Lực Sỹ', 'slug' => 'luc-sy', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Thanh Long', 'slug' => 'thanh-long', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Tiểu Hao', 'slug' => 'tieu-hao', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            // Tướng Quân đã có
+            ['name' => 'Tấu Thư', 'slug' => 'tau-thu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Phi Liêm', 'slug' => 'phi-liem', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Hỷ Thần', 'slug' => 'hy-than', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Bệnh Phù', 'slug' => 'benh-phu', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            ['name' => 'Đại Hao', 'slug' => 'dai-hao', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'],
+            // Phục Binh đã có
+            ['name' => 'Quan Phủ', 'slug' => 'quan-phu-bac-sy', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Sao phụ vòng Bác Sỹ'], 
+
+            // --- 10. SAO LƯU (Theo năm xem) ---
+            ['name' => 'L.Thái Tuế', 'slug' => 'luu-thai-tue', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Lộc Tồn', 'slug' => 'luu-loc-ton', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Kình Dương', 'slug' => 'luu-kinh-duong', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Đà La', 'slug' => 'luu-da-la', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Thiên Mã', 'slug' => 'luu-thien-ma', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Bạch Hổ', 'slug' => 'luu-bach-ho', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Tang Môn', 'slug' => 'luu-tang-mon', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Thiên Khốc', 'slug' => 'luu-thien-khoc', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Thiên Hư', 'slug' => 'luu-thien-hu', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Đào Hoa', 'slug' => 'luu-dao-hoa', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Hồng Loan', 'slug' => 'luu-hong-loan', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Thiên Hỷ', 'slug' => 'luu-thien-hy', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+
         ];
 
         foreach ($stars as $star) {

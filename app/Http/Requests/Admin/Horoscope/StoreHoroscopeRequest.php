@@ -14,11 +14,23 @@ class StoreHoroscopeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:191'],
-            'gender' => ['required', 'string', 'in:male,female'],
-            'birth_date' => ['required', 'date'], // YYYY-MM-DD
-            'birth_time' => ['required', 'date_format:H:i'], // HH:MM
-            'timezone' => ['nullable', 'string', 'max:64'],
+            'name' => ['required', 'string', 'max:255'],
+            'gender' => ['required', 'in:male,female'],
+            
+            // Split Date Fields
+            'day' => ['required', 'integer', 'min:1', 'max:31'],
+            'month' => ['required', 'integer', 'min:1', 'max:12'],
+            'year' => ['required', 'integer', 'min:1900', 'max:2100'],
+            
+            // Split Time Fields
+            'hour' => ['required', 'integer', 'min:0', 'max:23'],
+            'minute' => ['required', 'integer', 'min:0', 'max:59'],
+
+            // View Date
+            'view_year' => ['required', 'integer', 'min:1900', 'max:2100'],
+            'view_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            
+            'timezone' => ['nullable', 'string'],
         ];
     }
 }
