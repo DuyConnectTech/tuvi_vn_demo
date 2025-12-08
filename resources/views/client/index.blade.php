@@ -83,29 +83,44 @@
 @endsection
 
 @push('js')
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // 1. Load History
-        loadHistory();
-
-        // 2. Save History on Form Submit? No, save on Show page is better.
-        // But we can simulate it or just rely on Show page logic.
-    });
-
-    function loadHistory() {
-        let history = JSON.parse(localStorage.getItem('tuvi_history')) || [];
-        if (history.length > 0) {
-            $('#history-card').show();
-            let html = '';
-            // Show last 5
-            history.slice(0, 5).forEach(item => {
-                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="/la-so/${item.slug}" class="text-dark font-weight-bold">${item.name}</a>
-                            <small class="text-muted">${item.date}</small>
-                        </li>`;
+    (function() {
+        function initApp() {
+            var $ = window.jQuery;
+            
+            $(document).ready(function() {
+                // 1. Load History
+                loadHistory();
             });
-            $('#history-list').html(html);
+
+            function loadHistory() {
+                let history = JSON.parse(localStorage.getItem('tuvi_history')) || [];
+                if (history.length > 0) {
+                    $('#history-card').show();
+                    let html = '';
+                    // Show last 5
+                    history.slice(0, 5).forEach(item => {
+                        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="/la-so/${item.slug}" class="text-dark font-weight-bold">${item.name}</a>
+                                    <small class="text-muted">${item.date}</small>
+                                </li>`;
+                    });
+                    $('#history-list').html(html);
+                }
+            }
         }
-    }
+
+        if (window.jQuery) {
+            initApp();
+        } else {
+            var checkInterval = setInterval(function() {
+                if (window.jQuery) {
+                    clearInterval(checkInterval);
+                    initApp();
+                }
+            }, 100);
+        }
+    })();
 </script>
 @endpush

@@ -54,6 +54,7 @@ class HoroscopeHouse extends Model
 		'horoscope_id',
 		'code',
 		'label',
+        'can',
 		'branch',
 		'element',
 		'life_phase',

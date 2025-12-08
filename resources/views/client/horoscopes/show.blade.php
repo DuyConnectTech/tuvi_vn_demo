@@ -245,47 +245,62 @@
 @endsection
 
 @push('js')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> {{-- Ensure jQuery is loaded for highlight --}}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
-    $(document).ready(function() {
-        saveHistory();
-
-        // Store original class of the central view
-        const $centralView = $('.view-con-giap-la-so');
-        const originalClass = $centralView.attr('class');
-
-        // Highlight relations on hover
-        $('.cung').hover(function() { // Use .cung instead of .cung-view to get data from td
-            const currentHouseBranch = $(this).data('branch'); // Get branch from td
-            const relations = $(this).data('relations');
-            const branchIndex = $(this).data('branch-index');
-
-            // 1. Update Central View Line
-            if (branchIndex !== undefined) {
-                $centralView.attr('class', 'view-con-giap-la-so list-line-' + branchIndex);
-            }
-
-            // 2. Highlight Current House
-            $(this).addClass('highlight-current');
-
-            // 3. Highlight related houses
-            if (relations && relations.length > 0) {
-                relations.forEach(relation => {
-                    const targetBranch = relation.to_branch_code;
-                    const relationType = relation.type; // tam_hop, xung, nhi_hop, luc_hai
-
-                    // Highlight target houses only
-                    $(`td.cung[data-branch="${targetBranch}"]`).addClass(`highlight-${relationType}`);
-                });
-            }
-        }, function() {
-            // Remove all highlights on mouse leave
-            $(`td.cung`).removeClass('highlight-current highlight-tam-hop highlight-xung highlight-nhi-hop highlight-luc-hai');
+    (function() {
+        function initApp() {
+            var $ = window.jQuery;
             
-            // Restore Central View Line
-            $centralView.attr('class', originalClass);
-        });
-    });
+            $(document).ready(function() {
+                saveHistory();
+
+                // Store original class of the central view (Only target the one in Thien Ban)
+                const $centralView = $('.thien-ban .view-con-giap-la-so');
+                const originalClass = $centralView.attr('class');
+
+                // Highlight relations on hover
+                $('.cung').hover(function() {
+                    const currentHouseBranch = $(this).data('branch');
+                    const relations = $(this).data('relations');
+                    const branchIndex = $(this).data('branch-index');
+
+                    // 1. Update Central View Line
+                    if (branchIndex !== undefined) {
+                        $centralView.attr('class', 'view-con-giap-la-so list-line-' + branchIndex);
+                    }
+
+                    // 2. Highlight Current House
+                    $(this).addClass('highlight-current');
+
+                    // 3. Highlight related houses
+                    if (relations && relations.length > 0) {
+                        relations.forEach(relation => {
+                            const targetBranch = relation.to_branch_code;
+                            const relationType = relation.type; 
+
+                            $(`td.cung[data-branch="${targetBranch}"]`).addClass(`highlight-${relationType}`);
+                        });
+                    }
+                }, function() {
+                    $(`td.cung`).removeClass('highlight-current highlight-tam-hop highlight-xung highlight-nhi-hop highlight-luc-hai');
+                    $centralView.attr('class', originalClass);
+                });
+            });
+        }
+
+        // Check if jQuery is loaded
+        if (window.jQuery) {
+            initApp();
+        } else {
+            // Retry after 100ms if loading via async script
+            var checkInterval = setInterval(function() {
+                if (window.jQuery) {
+                    clearInterval(checkInterval);
+                    initApp();
+                }
+            }, 100);
+        }
+    })();
 
     function saveHistory() {
         const currentItem = {
@@ -295,18 +310,9 @@
         };
 
         let history = JSON.parse(localStorage.getItem('tuvi_history')) || [];
-        
-        // Remove duplicate if exists (by slug)
         history = history.filter(item => item.slug !== currentItem.slug);
-        
-        // Add to top
         history.unshift(currentItem);
-        
-        // Limit to 10 items
-        if (history.length > 10) {
-            history.pop();
-        }
-        
+        if (history.length > 10) history.pop();
         localStorage.setItem('tuvi_history', JSON.stringify(history));
     }
 </script>

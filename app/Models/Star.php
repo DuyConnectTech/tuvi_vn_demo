@@ -56,12 +56,28 @@ class Star extends Model
 	public function horoscope_houses()
 	{
 		return $this->belongsToMany(HoroscopeHouse::class, 'horoscope_house_stars')
-					->withPivot('id', 'status', 'is_transit', 'source_text', 'order', 'extra')
-					->withTimestamps();
+			->withPivot('id', 'status', 'is_transit', 'source_text', 'order', 'extra')
+			->withTimestamps();
 	}
 
-	public function star_energy_levels()
+	public function horoscope_house_stars()
 	{
-		return $this->hasMany(StarEnergyLevel::class, 'star_slug', 'slug');
+		return $this->hasMany(HoroscopeHouseStar::class);
+	}
+
+	/**
+	 * Get the color hex code based on the star's element.
+	 * tuvi.vn style colors.
+	 */
+	public function getColorAttribute()
+	{
+		return match ($this->default_element) {
+			'Kim' => '#999999', // Gray
+			'Mộc' => '#009130', // Green
+			'Thủy' => '#000000', // Black
+			'Hỏa' => '#ff0000', // Red
+			'Thổ' => '#ffa000', // Orange/Yellow
+			default => '#333333'
+		};
 	}
 }
