@@ -104,5 +104,17 @@
                 </form>
             </div>
         </div>
-    </div>
 @endsection
+
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('#text_template').summernote({
+            height: 150, // set editor height
+            minHeight: null, // set minimum height of editor
+            maxHeight: null, // set maximum height of editor
+            focus: true // set focus to editable area after initializing summernote
+        });
+    });
+</script>
+@endpush

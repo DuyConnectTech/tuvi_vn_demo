@@ -251,8 +251,16 @@
             let selectedValues = [];
 
             if (initialValue !== null && initialValue !== undefined) {
-                if (Array.isArray(initialValue)) {
-                    selectedValues = initialValue.map(String);
+                if (typeof initialValue === 'object' && initialValue !== null) {
+                    if (Array.isArray(initialValue)) {
+                        selectedValues = initialValue.map(String);
+                    } else if (initialValue.hasOwnProperty('star_slug')) {
+                        selectedValues = [initialValue.star_slug];
+                    } else if (initialValue.hasOwnProperty('value')) { // Generic value key
+                        selectedValues = [initialValue.value];
+                    } else {
+                        selectedValues = [JSON.stringify(initialValue)];
+                    }
                 } else {
                     selectedValues = [String(initialValue)];
                 }
@@ -263,12 +271,14 @@
 
             switch (type) {
                 case 'has_star':
-                case 'has_not_star':
-                    inputHtml = `<select class="form-control form-control-sm condition-value" name="${currentName}">`;
+                case 'star_in_house': // Added support for star_in_house
+                    // Use a simple input for star slug if list is not available or for flexibility
+                    // Or better, use select if ALL_STARS is populated
+                    inputHtml = `<select class="form-control form-control-sm condition-value select2-single" name="${currentName}">`; // Added select2-single class
                     inputHtml += `<option value="">-- Chọn Sao --</option>`;
                     ALL_STARS.forEach(star => {
-                        const selected = selectedValues.includes(String(star.name)) ? 'selected' : '';
-                        inputHtml += `<option value="${star.name}" ${selected}>${star.name}</option>`;
+                        const selected = selectedValues.includes(String(star.slug)) ? 'selected' : ''; // Use slug
+                        inputHtml += `<option value="${star.slug}" ${selected}>${star.name}</option>`;
                     });
                     inputHtml += `</select>`;
                     break;
@@ -350,7 +360,15 @@
                     allowClear: true
                 });
             }
-        }
+        });
+
+        // --- Summernote Initialization ---
+        $('#text_template').summernote({
+            height: 150, // set editor height
+            minHeight: null, // set minimum height of editor
+            maxHeight: null, // set maximum height of editor
+            focus: true // set focus to editable area after initializing summernote
+        });
     });
 </script>
 @endpush

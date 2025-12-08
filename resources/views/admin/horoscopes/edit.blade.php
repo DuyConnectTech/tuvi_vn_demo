@@ -42,7 +42,7 @@
 
                         <div class="form-group">
                             <label>Ghi chú / Mô tả</label>
-                            <textarea class="form-control" name="description" rows="3">{{ old('description', $horoscope->description) }}</textarea>
+                            <textarea class="form-control" id="description_editor" name="description" rows="3">{{ old('description', $horoscope->description) }}</textarea>
                         </div>
                         
                         <div class="form-group">
@@ -156,6 +156,15 @@
             allowClear: true
         });
 
+        // Init Summernote
+        $('#description_editor').summernote({
+            height: 150,
+            minHeight: null,
+            maxHeight: null,
+            focus: false
+        });
+
+        // Existing logic for adding stars to house
         $('.btn-add-star').click(function() {
             let houseId = $(this).data('house-id');
             let starId = $(`#star-select-${houseId}`).val();

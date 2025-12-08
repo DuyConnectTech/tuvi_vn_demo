@@ -129,6 +129,16 @@ class StarSeeder extends Seeder
             ['name' => 'L.Đào Hoa', 'slug' => 'luu-dao-hoa', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
             ['name' => 'L.Hồng Loan', 'slug' => 'luu-hong-loan', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
             ['name' => 'L.Thiên Hỷ', 'slug' => 'luu-thien-hy', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Hóa Lộc', 'slug' => 'luu-hoa-loc', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Hóa Quyền', 'slug' => 'luu-hoa-quyen', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Hóa Khoa', 'slug' => 'luu-hoa-khoa', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+            ['name' => 'L.Hóa Kỵ', 'slug' => 'luu-hoa-ky', 'group_type' => 'luu_tinh', 'is_main' => false, 'quality' => 'Sao Lưu'],
+
+            // --- 11. SAO NHỎ KHÁC ---
+            ['name' => 'Địa Giải', 'slug' => 'dia-giai', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Giải ách'],
+            ['name' => 'Thiên Giải', 'slug' => 'thien-giai', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Giải ách'],
+            ['name' => 'Giải Thần', 'slug' => 'giai-than', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Giải ách'],
+            ['name' => 'Phá Toái', 'slug' => 'pha-toai', 'group_type' => 'phu_tinh', 'is_main' => false, 'quality' => 'Hao tán'],
 
         ];
 

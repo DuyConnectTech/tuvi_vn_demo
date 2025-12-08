@@ -27,11 +27,11 @@
                         </div>
                         <div class="form-group">
                             <label>Định nghĩa / Nội dung</label>
-                            <textarea class="form-control" name="definition" rows="3">{{ old('definition', $glossary->definition) }}</textarea>
+                            <textarea class="form-control" id="definition_editor" name="definition" rows="3">{{ old('definition', $glossary->definition) }}</textarea>
                         </div>
                         <div class="form-group">
                             <label>Mô tả ngắn</label>
-                            <textarea class="form-control" name="description" rows="2">{{ old('description', $glossary->description) }}</textarea>
+                            <textarea class="form-control" id="description_editor" name="description" rows="2">{{ old('description', $glossary->description) }}</textarea>
                         </div>
                         <div class="form-group">
                             <label>Link tham khảo</label>
@@ -45,5 +45,23 @@
                 </form>
             </div>
         </div>
-    </div>
-@endsection
+
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('#definition_editor').summernote({
+            height: 150,
+            minHeight: null,
+            maxHeight: null,
+            focus: true
+        });
+        $('#description_editor').summernote({
+            height: 100,
+            minHeight: null,
+            maxHeight: null,
+            focus: false
+        });
+    });
+</script>
+@endpush
+

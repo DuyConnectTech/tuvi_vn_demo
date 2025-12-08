@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
             LucThapHoaGiapSeeder::class,
             StarEnergyLevelSeeder::class,
             GlossarySeeder::class,
+            SampleHoroscopeSeeder::class,
+            FullRuleSeeder::class,
         ]);
     }
 }

@@ -47,6 +47,14 @@
                         <p>Quản lý Thành viên</p>
                     </a>
                 </li>
+
+                {{-- Horoscopes Management --}}
+                <li class="nav-item">
+                    <a href="{{ route('admin.horoscopes.index') }}" class="nav-link {{ request()->routeIs('admin.horoscopes.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-star-of-david"></i>
+                        <p>Quản lý Lá số</p>
+                    </a>
+                </li>
                 
                 {{-- Glossaries Management --}}
                 <li class="nav-item">
