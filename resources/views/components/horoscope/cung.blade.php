@@ -51,7 +51,7 @@
                         </div>
 
                         @foreach($house->stars as $star)
-                            @if($star->pivot->is_main)
+                            @if($star->is_main)
                                 <p class="text-chinh-chinh txt-tiny-bold" style="color: {{ $star->color }}">
                                     {{ $sign }}{{ $star->name }} ({{ $star->pivot->status }})
                                 </p>
@@ -81,7 +81,7 @@
                 
                 <div class="sao-tot">
                     @foreach($house->stars as $star)
-                        @if(!$star->pivot->is_main && !in_array($star->slug, $badStarSlugs) && !in_array($star->slug, $trangSinhSlugs) && $star->group_type != 'sat_tinh')
+                        @if(!$star->is_main && !in_array($star->slug, $badStarSlugs) && !in_array($star->slug, $trangSinhSlugs) && $star->group_type != 'sat_tinh')
                             <div class="txt-tiny text-sao-xau-tot" style="color: {{ $star->color }}">
                                 {{ $star->name }}
                                 @if($star->pivot->status != 'Bình') <small>({{ $star->pivot->status }})</small> @endif
@@ -92,7 +92,7 @@
                 
                 <div class="sao-xau">
                     @foreach($house->stars as $star)
-                        @if(!$star->pivot->is_main && (in_array($star->slug, $badStarSlugs) || $star->group_type == 'sat_tinh') && !in_array($star->slug, $trangSinhSlugs))
+                        @if(!$star->is_main && (in_array($star->slug, $badStarSlugs) || $star->group_type == 'sat_tinh') && !in_array($star->slug, $trangSinhSlugs))
                             <div class="txt-tiny text-sao-xau-tot font-weight-bold" style="color: {{ $star->color }}">
                                 {{ $star->name }}
                                 @if($star->pivot->status != 'Bình') <small>({{ $star->pivot->status }})</small> @endif

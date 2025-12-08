@@ -3,97 +3,7 @@
 @section('title', 'Lá Số Tử Vi - ' . $horoscope->name)
 
 @push('css')
-    <style>
-        body { background-color: #efecdd; color: #333; } /* Override body bg */
-        .table-la-so { width: 100%; max-width: 1000px; margin: 0 auto; border-collapse: collapse; background-color: #f1ece3; border: 2px solid #000; }
-        .table-la-so td { border: 1px solid #888; padding: 0; vertical-align: top; width: 25%; height: 250px; position: relative; }
-        
-        /* Cung View */
-        .cung-view { display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding: 5px; }
-        
-        /* Top: Can Chi Cung + Tên Cung + Chính Tinh */
-        .cung-top { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 5px; margin-bottom: 5px; }
-        .view-cung-top {    display: flex; justify-content: space-between; padding: 8px 5px 0 5px;}
-        .text-dia-chi { font-weight: bold; font-size: 14px; text-transform: uppercase; color: #666; }
-        .text-ten-cung { font-weight: bold; font-size: 16px; color: #a21313; display: inline-block; padding: 2px 8px; border-radius: 3px; margin: 2px 0; }
-        .text-ten-cung.menh { background: #a21313; color: #fff; } /* Mệnh */
-        .text-ten-cung.than { background: #d4a017; color: #000; } /* Thân */
-        .text-ten-cung.binh-hoa { background: #ccc; color: #000; } /* Các cung khác */
-        
-        .chinh-tinh { text-align: center; font-weight: 700; }
-        .sao-chinh { font-weight: bold; font-size: 15px; display: block; }
-        .sao-chinh.Miếu, .sao-chinh.Vượng { color: #d00; } /* Miếu - Đỏ đậm */
-        .sao-chinh.Đắc { color: #009130; } /* Đắc - Xanh */
-        .sao-chinh.Bình { color: #555; }
-        .sao-chinh.Hãm { color: #777; font-style: italic; } /* Hãm - Xám nghiêng */
-
-        /* Middle: Phụ Tinh */
-        .cung-middle { flex-grow: 1; display: flex; }
-        .sao-tot { width: 50%; text-align: left; padding-right: 2px; }
-        .sao-xau { width: 50%; text-align: right; padding-left: 2px; }
-        
-        .sao-phu { display: block; margin-bottom: 1px; font-size: 13px; }
-        .sao-tot .sao-phu { color: #000; } /* Phụ tinh cát */
-        .sao-xau .sao-phu { color: #555; } /* Phụ tinh sát */
-        
-        /* Special Stars Colors (override general sao-phu) */
-        .sao-loc-ton, .sao-hoa-loc { color: #009130 !important; font-weight: bold; } /* Lộc - Xanh */
-        .sao-hoa-quyen { color: #d00 !important; font-weight: bold; } /* Quyền - Đỏ */
-        .sao-hoa-khoa { color: #009130 !important; } /* Khoa - Xanh */
-        .sao-hoa-ky, .sao-da-la, .sao-kinh-duong { color: #000 !important; font-weight: bold; } /* Kỵ/Sát - Đen đậm */
-        .sao-hoa-tinh, .sao-linh-tinh, .sao-dia-khong, .sao-dia-kiep { color: #d00 !important; } /* Sát tinh đặc biệt */
-
-        /* Tuần Triệt Specific */
-        .sao-tuan-triet {
-            position: absolute;
-            top: 5px; /* Adjust as needed */
-            font-size: 12px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #000;
-            padding: 2px 5px;
-            border-radius: 3px;
-            z-index: 10;
-        }
-        .sao-tuan { left: 5px; }
-        .sao-triet { right: 5px; }
-        
-        /* Bottom: Đại Vận, Tiểu Vận */
-        .cung-bottom { border-top: 1px dashed #ccc; padding-top: 5px; margin-top: 5px; display: flex; justify-content: space-between; font-size: 12px; color: #666; }
-        .dai-van-num { font-weight: bold; font-size: 16px; color: #a21313; }
-
-        /* Thiên Bàn (Center) */
-        .thien-ban { text-align: center; padding: 20px !important; background: #fff; }
-        .thien-ban h1 { font-family: 'Times New Roman', serif; color: #a21313; margin-bottom: 20px; }
-        .info-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; }
-        .info-label { font-weight: bold; color: #555; }
-        .info-value { font-weight: bold; color: #000; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .table-la-so td { display: block; width: 100%; height: auto; margin-bottom: 10px; border: 1px solid #000; }
-            .thien-ban { display: block; width: 100%; }
-        }
-
-        /* Highlight classes for relations */
-        .highlight-current { background-color: #fff; box-shadow: inset 0 0 0 3px #d4a017; z-index: 10; } /* Current: Gold Border Inner */
-        .highlight-tam-hop { background-color: #e6ffe6; border: 2px solid #0a0; } /* Light green for Tam Hop */
-        .highlight-xung { background-color: #ffe6e6; border: 2px solid #a00; } /* Light red for Lục Xung */
-        .highlight-nhi-hop { background-color: #e6e6ff; border: 2px solid #00a; } /* Light blue for Nhị Hợp */
-        .highlight-luc-hai { background-color: #fffbe6; border: 2px solid #aa0; } /* Light yellow for Lục Hại */
-
-        /* Con Giáp - Thiên Bàn (từ tuvi.vn style) */
-        .view-con-giap-la-so {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            right: 0;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
+    <style type="text/css">
         /* Ảnh đường kẻ cung chiếu (từ tuvi.vn) */
         .list-line-0 { background-image: url("{{ asset('storage/images/cung-chieu-03.png') }}"); }
         .list-line-1 { background-image: url("{{ asset('storage/images/cung-chieu-03.png') }}"); -webkit-transform: scaleX(-1); transform: scaleX(-1); }
@@ -107,30 +17,6 @@
         .list-line-9 { background-image: url("{{ asset('storage/images/cung-chieu-01.png') }}"); -webkit-transform: scaleY(-1); transform: scaleY(-1); }
         .list-line-10 { background-image: url("{{ asset('storage/images/cung-chieu-01.png') }}"); }
         .list-line-11 { background-image: url("{{ asset('storage/images/cung-chieu-02.png') }}"); }
-
-        /* Con Giáp trong Cung */
-        .cung-top .view-con-giap-la-so {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background-size: 80%; /* Adjusted for smaller size in cung */
-            background-repeat: no-repeat;
-            background-position: center bottom; /* Position at bottom center */
-            opacity: 0.1; /* Make it subtle */
-            z-index: 1;
-            transition: opacity 0.3s ease; /* Smooth transition */
-        }
-        
-        /* Highlight Con Giap when House is Highlighted */
-        .cung.highlight-tam-hop .view-con-giap-la-so,
-        .cung.highlight-xung .view-con-giap-la-so,
-        .cung.highlight-nhi-hop .view-con-giap-la-so,
-        .cung.highlight-luc-hai .view-con-giap-la-so,
-        .cung.highlight-current .view-con-giap-la-so {
-            opacity: 0.5; /* Increase visibility */
-        }
 
         /* Specific con giap images (copying tuvi.vn logic for animal masks) */
         .ty { background-image: url("{{ asset('storage/images/con_giap_ty.png') }}"); }
@@ -166,7 +52,7 @@
                     
                     <td colspan="2" rowspan="2" class="thien-ban" data-menh-chi-index="{{ $horoscope->meta->menh_chi_index ?? 0 }}">
                         <div class="view-con-giap-la-so {{ 'list-line-' . ($horoscope->meta->menh_chi_index ?? 0) }}"></div>
-                        <h1>LÁ SỐ TỬ VI</h1>
+                        <h1 style="font-family: UTM-Azuki;font-size: 29px;letter-spacing: normal;line-height: 31px;">LÁ SỐ TỬ VI</h1>
                         <div class="info-box">
                             <div class="info-row">
                                 <span class="info-label">Họ tên:</span>
