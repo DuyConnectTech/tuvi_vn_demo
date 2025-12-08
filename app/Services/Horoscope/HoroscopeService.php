@@ -87,6 +87,11 @@ class HoroscopeService
         $napAm = $this->determineNapAm($canChiYear);
         $horoscope->update(['nap_am' => $napAm]);
 
+        // Calculate Bone Weight (Can Luong)
+        $hourChi = self::CHIS[$lunarHour];
+        $canLuong = BoneWeightCalculator::calculate($canChiYear, $lunarMonth, $lunarDay, $hourChi);
+        $horoscope->update(['can_luong' => $canLuong]);
+
         $cucInfo = $this->determineCuc($lunarMonth, $lunarHour, $yearCan);
         $horoscope->update(['cuc' => $cucInfo['cuc'], 'so_cuc' => $cucInfo['so_cuc']]);
 

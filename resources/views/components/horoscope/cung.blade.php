@@ -62,7 +62,8 @@
                     {{-- Right: Dai Van & Month --}}
                     <div class="view-cung-dai-van">
                         <p class="text-dia-chi txt-tiny-mid text-dai-van-number">{{ $house->dai_van_start_age ?? '--' }}</p>
-                        <p class="text-dia-chi txt-tiny-mid">Th.--</p> 
+                        {{-- Display only the first month if multiple, or all --}}
+                        <p class="text-dia-chi txt-tiny-mid">{{ $house->nguyet_han ?? 'Th.--' }}</p> 
                     </div>
                 </div>
             </div>
@@ -70,7 +71,12 @@
             <div class="cung-middle">
                 @php
                     $trangSinhSlugs = ['trang-sinh', 'moc-duc', 'quan-doi', 'lam-quan', 'de-vuong', 'suy', 'benh', 'tu', 'mo', 'tuyet', 'thai', 'duong'];
-                    $badStarSlugs = ['da-la', 'kinh-duong', 'dia-khong', 'dia-kiep', 'hoa-tinh', 'linh-tinh', 'hoa-ky', 'tang-mon', 'bach-ho', 'thien-khoc', 'thien-hu', 'co-than', 'qua-tu', 'pha-toai', 'kiep-sat', 'luu-ha', 'thien-hinh'];
+                    // Expanded bad stars list including transit stars
+                    $badStarSlugs = [
+                        'da-la', 'kinh-duong', 'dia-khong', 'dia-kiep', 'hoa-tinh', 'linh-tinh', 'hoa-ky', 
+                        'tang-mon', 'bach-ho', 'thien-khoc', 'thien-hu', 'co-than', 'qua-tu', 'pha-toai', 'kiep-sat', 'luu-ha', 'thien-hinh',
+                        'luu-da-la', 'luu-kinh-duong', 'luu-bach-ho', 'luu-tang-mon', 'luu-thien-khoc', 'luu-thien-hu', 'luu-hoa-ky'
+                    ];
                 @endphp
                 
                 <div class="sao-tot">
@@ -101,6 +107,7 @@
             </div>
 
             <div class="cung-bottom">
+                {{-- Placeholder for Luu Dai Van (DV.XXX) - Not yet calculated in Service --}}
                 <span class="text-tieu-van txt-tiny">ĐV.--</span>
                 
                 @php
@@ -114,7 +121,7 @@
                     <span class="txt-tiny-mid">--</span>
                 @endif
                 
-                <span class="text-tieu-van txt-tiny">LN.--</span>
+                <span class="text-tieu-van txt-tiny">{{ $house->tieu_han ?? 'LN.--' }}</span>
             </div>
 
             {{-- Tên Chi cung ở đáy --}}
