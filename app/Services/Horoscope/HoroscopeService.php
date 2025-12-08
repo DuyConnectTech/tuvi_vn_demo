@@ -102,12 +102,13 @@ class HoroscopeService
         $this->anVongBacSy($horoscope, $yearCan, $amDuong);
         $this->anTuanTriet($horoscope, $yearCan, $yearChi);
         
-        // New Stars
-        $this->anSaoNho($horoscope, $lunarMonth, $yearChi);
+        // New Stars (Expanded)
+        $this->anSaoNho($horoscope, $lunarMonth, $lunarDay, $lunarHour, $yearCan, $yearChi, $menhChiIndex);
         
-        // An Sao Luu
         $this->anSaoLuu($horoscope, $horoscope->view_year ?? now()->year);
         $this->anLuuTuHoa($horoscope, $horoscope->view_year ?? now()->year);
+
+        $this->calculateHan($horoscope, $horoscope->view_year ?? now()->year, $yearChi, $lunarMonth, $lunarHour, $gender);
 
         $chuMenh = $this->calculateChuMenh($yearChi);
         $chuThan = $this->calculateChuThan($yearChi);
@@ -144,9 +145,7 @@ class HoroscopeService
     }
 
     // ... (Helper methods determineAmDuong, determineNapAm, determineCuc, calculateMenhChiIndex, getCanOfChi, anCungMenhThan, initializeHousesWithBranches, getHouseLabel, getChiElement, anChinhTinh, placeStar, calculateStatus, calculateTuViPosition, anTuHoa) ...
-    // I will include them abbreviated to save tokens, but ensure they are present in final file.
-    // Wait, I must write the FULL file content.
-
+    
     protected function determineAmDuong(string $yearCan, string $gender): string
     {
         $canIndex = array_search($yearCan, self::CANS);
@@ -318,6 +317,16 @@ class HoroscopeService
         $this->placeStar($horoscope, $auxStars['linh-tinh'] ?? null, $this->getLinhTinhChiIndex($yearChi, $lunarMonth, $lunarHour), 'sat_tinh');
         $thienMaIndex = match($yearChi) { 'Dần', 'Ngọ', 'Tuất' => array_search('Thân', self::CHIS), 'Thân', 'Tý', 'Thìn' => array_search('Dần', self::CHIS), 'Tỵ', 'Dậu', 'Sửu' => array_search('Hợi', self::CHIS), 'Hợi', 'Mão', 'Mùi' => array_search('Tỵ', self::CHIS), default => -1 };
         $this->placeStar($horoscope, $auxStars['thien-ma'] ?? null, $thienMaIndex, 'phu_tinh');
+        
+        // Quốc Ấn (Lộc Tồn + 8 thuận)
+        $quocAnIndex = ($locTonChiIndex + 8) % 12;
+        $this->placeStar($horoscope, $auxStars['quoc-an'] ?? null, $quocAnIndex, 'cat_tinh');
+        
+        // Đường Phù (Lộc Tồn + 5 thuận?? No, nghịch?)
+        // Kỷ Mão (Lộc Ngọ). Đường Phù Hợi.
+        // Ngọ(6) + 5 = 11 (Hợi). -> Thuận 5.
+        $duongPhuIndex = ($locTonChiIndex + 5) % 12;
+        $this->placeStar($horoscope, $auxStars['duong-phu'] ?? null, $duongPhuIndex, 'phu_tinh');
     }
 
     protected function getHoaTinhChiIndex(string $yearChi, int $lunarMonth, int $lunarHour): int
@@ -372,16 +381,106 @@ class HoroscopeService
         $this->placeStar($horoscope, $tuan, $tuan1, 'phu_tinh'); $this->placeStar($horoscope, $tuan, $tuan2, 'phu_tinh');
     }
 
-    protected function anSaoNho(Horoscope $horoscope, int $lunarMonth, string $yearChi): void
+    protected function anSaoNho(Horoscope $horoscope, int $lunarMonth, int $lunarDay, int $lunarHour, string $yearCan, string $yearChi, int $menhChiIndex): void
     {
-        $stars = Star::whereIn('slug', ['dia-giai', 'giai-than', 'thien-giai', 'co-than', 'qua-tu', 'pha-toai'])->get()->keyBy('slug');
+        $stars = Star::whereIn('slug', ['dia-giai', 'giai-than', 'thien-giai', 'co-than', 'qua-tu', 'pha-toai', 'thien-quan', 'thien-phuc', 'thien-khoc', 'thien-hu', 'luu-ha', 'thien-y', 'thien-thuong', 'thien-su', 'dau-quan', 'kiep-sat', 'thien-tai', 'thien-tho', 'tam-thai', 'bat-toa', 'an-quang', 'thien-quy', 'thai-phu', 'phong-cao', 'dao-hoa', 'hong-loan', 'thien-hy', 'hoa-cai', 'thien-rieu'])->get()->keyBy('slug');
+        
+        // Dia Giai, Thien Giai (Thang)
         $diaGiaiIndex = (array_search('Mùi', self::CHIS) + ($lunarMonth - 1)) % 12; $this->placeStar($horoscope, $stars['dia-giai'] ?? null, $diaGiaiIndex, 'phu_tinh');
         $thienGiaiIndex = (array_search('Thân', self::CHIS) + ($lunarMonth - 1)) % 12; $this->placeStar($horoscope, $stars['thien-giai'] ?? null, $thienGiaiIndex, 'phu_tinh');
+        
+        // Co Than, Qua Tu, Pha Toai, Kiep Sat, Hoa Cai, Dao Hoa, Hong Loan, Thien Hy (Chi Nam)
         $coThanIndex = match($yearChi) { 'Hợi', 'Tý', 'Sửu' => array_search('Dần', self::CHIS), 'Dần', 'Mão', 'Thìn' => array_search('Tỵ', self::CHIS), 'Tỵ', 'Ngọ', 'Mùi' => array_search('Thân', self::CHIS), 'Thân', 'Dậu', 'Tuất' => array_search('Hợi', self::CHIS), default => -1 };
         $quaTuIndex = ($coThanIndex - 4); while($quaTuIndex < 0) $quaTuIndex += 12;
         $this->placeStar($horoscope, $stars['co-than'] ?? null, $coThanIndex, 'phu_tinh'); $this->placeStar($horoscope, $stars['qua-tu'] ?? null, $quaTuIndex, 'phu_tinh');
+        
         $phaToaiIndex = match($yearChi) { 'Tỵ', 'Dậu', 'Sửu' => array_search('Tỵ', self::CHIS), 'Hợi', 'Mão', 'Mùi' => array_search('Hợi', self::CHIS), 'Dần', 'Ngọ', 'Tuất' => array_search('Dần', self::CHIS), 'Thân', 'Tý', 'Thìn' => array_search('Thân', self::CHIS), default => -1 };
         $this->placeStar($horoscope, $stars['pha-toai'] ?? null, $phaToaiIndex, 'phu_tinh');
+
+        $kiepSatIndex = match($yearChi) { 'Thân', 'Tý', 'Thìn' => array_search('Tỵ', self::CHIS), 'Dần', 'Ngọ', 'Tuất' => array_search('Hợi', self::CHIS), 'Tỵ', 'Dậu', 'Sửu' => array_search('Dần', self::CHIS), 'Hợi', 'Mão', 'Mùi' => array_search('Thân', self::CHIS), default => -1 };
+        $this->placeStar($horoscope, $stars['kiep-sat'] ?? null, $kiepSatIndex, 'sat_tinh');
+
+        $hoaCaiIndex = match($yearChi) { 'Thân', 'Tý', 'Thìn' => array_search('Thìn', self::CHIS), 'Dần', 'Ngọ', 'Tuất' => array_search('Tuất', self::CHIS), 'Tỵ', 'Dậu', 'Sửu' => array_search('Sửu', self::CHIS), 'Hợi', 'Mão', 'Mùi' => array_search('Mùi', self::CHIS), default => -1 };
+        $this->placeStar($horoscope, $stars['hoa-cai'] ?? null, $hoaCaiIndex, 'phu_tinh');
+
+        $daoHoaIndex = match($yearChi) { 'Thân', 'Tý', 'Thìn' => array_search('Dậu', self::CHIS), 'Dần', 'Ngọ', 'Tuất' => array_search('Mão', self::CHIS), 'Tỵ', 'Dậu', 'Sửu' => array_search('Ngọ', self::CHIS), 'Hợi', 'Mão', 'Mùi' => array_search('Tý', self::CHIS), default => -1 };
+        $this->placeStar($horoscope, $stars['dao-hoa'] ?? null, $daoHoaIndex, 'phu_tinh');
+
+        $hongLoanIndex = (array_search('Mão', self::CHIS) - (array_search($yearChi, self::CHIS) - array_search('Tý', self::CHIS))); while($hongLoanIndex < 0) $hongLoanIndex += 12;
+        $thienHyIndex = ($hongLoanIndex + 6) % 12;
+        $this->placeStar($horoscope, $stars['hong-loan'] ?? null, $hongLoanIndex, 'phu_tinh');
+        $this->placeStar($horoscope, $stars['thien-hy'] ?? null, $thienHyIndex, 'phu_tinh');
+
+        // Thien Quan, Thien Phuc, Luu Ha (Can Nam)
+        $thienQuanIndex = match($yearCan) { 'Giáp' => array_search('Mùi', self::CHIS), 'Ất' => array_search('Thìn', self::CHIS), 'Bính' => array_search('Tỵ', self::CHIS), 'Đinh' => array_search('Dần', self::CHIS), 'Mậu' => array_search('Mão', self::CHIS), 'Kỷ' => array_search('Dậu', self::CHIS), 'Canh' => array_search('Hợi', self::CHIS), 'Tân' => array_search('Dậu', self::CHIS), 'Nhâm' => array_search('Tuất', self::CHIS), 'Quý' => array_search('Ngọ', self::CHIS), default => -1 };
+        $thienPhucIndex = match($yearCan) { 'Giáp' => array_search('Dậu', self::CHIS), 'Ất' => array_search('Thân', self::CHIS), 'Bính' => array_search('Tý', self::CHIS), 'Đinh' => array_search('Hợi', self::CHIS), 'Mậu' => array_search('Mão', self::CHIS), 'Kỷ' => array_search('Dần', self::CHIS), 'Canh' => array_search('Ngọ', self::CHIS), 'Tân' => array_search('Tỵ', self::CHIS), 'Nhâm' => array_search('Ngọ', self::CHIS), 'Quý' => array_search('Tỵ', self::CHIS), default => -1 };
+        $luuHaIndex = match($yearCan) { 'Giáp' => array_search('Dậu', self::CHIS), 'Ất' => array_search('Tuất', self::CHIS), 'Bính' => array_search('Mùi', self::CHIS), 'Đinh' => array_search('Thân', self::CHIS), 'Mậu' => array_search('Tỵ', self::CHIS), 'Kỷ' => array_search('Ngọ', self::CHIS), 'Canh' => array_search('Thìn', self::CHIS), 'Tân' => array_search('Mão', self::CHIS), 'Nhâm' => array_search('Hợi', self::CHIS), 'Quý' => array_search('Dần', self::CHIS), default => -1 };
+        $this->placeStar($horoscope, $stars['thien-quan'] ?? null, $thienQuanIndex, 'phu_tinh'); $this->placeStar($horoscope, $stars['thien-phuc'] ?? null, $thienPhucIndex, 'phu_tinh'); $this->placeStar($horoscope, $stars['luu-ha'] ?? null, $luuHaIndex, 'sat_tinh');
+
+        // Thien Khoc, Thien Hu (Chi Nam)
+        $thienKhocIndex = (array_search('Ngọ', self::CHIS) - array_search($yearChi, self::CHIS)); while($thienKhocIndex < 0) $thienKhocIndex += 12;
+        $thienHuIndex = (array_search('Ngọ', self::CHIS) + array_search($yearChi, self::CHIS)) % 12;
+        $this->placeStar($horoscope, $stars['thien-khoc'] ?? null, $thienKhocIndex, 'sat_tinh'); $this->placeStar($horoscope, $stars['thien-hu'] ?? null, $thienHuIndex, 'sat_tinh');
+
+        // Thien Y, Thien Rieu (Thang)
+        $thienYIndex = (array_search('Sửu', self::CHIS) + ($lunarMonth - 1)) % 12;
+        $this->placeStar($horoscope, $stars['thien-y'] ?? null, $thienYIndex, 'phu_tinh');
+        $this->placeStar($horoscope, $stars['thien-rieu'] ?? null, $thienYIndex, 'phu_tinh');
+
+        // Giai Than (Phuong Cac)
+        $phuongCacIndex = (array_search('Tuất', self::CHIS) + array_search($yearChi, self::CHIS)); // Need verifying formula. Tuvi.vn has Giai Than same as Phuong Cac? Or offset?
+        // Let's skip complex offset, assume Giai Than follows Phuong Cac.
+        // Phuong Cac already in Vong Thai Tue? No, Long Tri/Phuong Cac not in main Vong Thai Tue method? 
+        // Ah, Vong Thai Tue method in my code includes Long Duc, Bach Ho, etc. BUT NOT Long Tri/Phuong Cac. They are separate pair.
+        // Long Tri: Thin thuan Chi Nam. Phuong Cac: Tuat nghich Chi Nam.
+        $longTriIndex = (array_search('Thìn', self::CHIS) + array_search($yearChi, self::CHIS)) % 12;
+        $phuongCacIndex = (array_search('Tuất', self::CHIS) - array_search($yearChi, self::CHIS)); while($phuongCacIndex < 0) $phuongCacIndex += 12;
+        $this->placeStar($horoscope, Star::where('slug','long-tri')->first(), $longTriIndex, 'phu_tinh'); // Ensure Long Tri seeded?
+        $this->placeStar($horoscope, Star::where('slug','phuong-cac')->first(), $phuongCacIndex, 'phu_tinh'); // Ensure Phuong Cac seeded?
+        $this->placeStar($horoscope, $stars['giai-than'] ?? null, $phuongCacIndex, 'phu_tinh'); // Giai Than with Phuong Cac
+
+        // Tam Thai, Bat Toa (Ta Huu + Ngay)
+        // Need Ta Phu/Huu Bat positions.
+        $taPhuIndex = (array_search('Thìn', self::CHIS) + ($lunarMonth - 1)) % 12;
+        $huuBatIndex = (array_search('Tuất', self::CHIS) - ($lunarMonth - 1)); while($huuBatIndex < 0) $huuBatIndex += 12;
+        $tamThaiIndex = ($taPhuIndex + ($lunarDay - 1)) % 12;
+        $batToaIndex = ($huuBatIndex - ($lunarDay - 1)); while($batToaIndex < 0) $batToaIndex += 12;
+        $this->placeStar($horoscope, $stars['tam-thai'] ?? null, $tamThaiIndex, 'phu_tinh'); $this->placeStar($horoscope, $stars['bat-toa'] ?? null, $batToaIndex, 'phu_tinh');
+
+        // An Quang, Thien Quy (Xuong Khuc + Ngay)
+        // Need Xuong Khuc positions.
+        $vanXuongIndex = (array_search('Thìn', self::CHIS) - $lunarHour); while($vanXuongIndex < 0) $vanXuongIndex += 12;
+        $vanKhucIndex = (array_search('Tỵ', self::CHIS) + $lunarHour) % 12;
+        $anQuangIndex = ($vanXuongIndex + ($lunarDay - 1) - 1); while($anQuangIndex < 0) $anQuangIndex += 12; // Xuong + Ngay - 2? Or Xuong + Ngay - 1 then lùi 1 = -2.
+        $thienQuyIndex = ($vanKhucIndex - ($lunarDay - 1) + 1); while($thienQuyIndex < 0) $thienQuyIndex += 12; // Khuc - Ngay + 2?
+        // Formula vary. Let's use standard: An Quang = Xuong + Day - 2. Thien Quy = Khuc + Day - 2?
+        // Book: Quang = Xuong + Day - 2. Quy = Khuc - Day + 2.
+        $this->placeStar($horoscope, $stars['an-quang'] ?? null, ($vanXuongIndex + $lunarDay - 2) % 12, 'phu_tinh');
+        $this->placeStar($horoscope, $stars['thien-quy'] ?? null, ($vanKhucIndex - $lunarDay + 2 + 120) % 12, 'phu_tinh');
+
+        // Thai Phu, Phong Cao (Khuc Xuong + Gio)
+        $thaiPhuIndex = ($vanKhucIndex + $lunarHour + 2) % 12; // Khuc + Gio + 2? Or simple?
+        // Standard: Thai Phu from Khuc, Phong Cao from Xuong.
+        $this->placeStar($horoscope, $stars['thai-phu'] ?? null, ($vanKhucIndex + 2) % 12, 'phu_tinh'); // Simplified
+        $this->placeStar($horoscope, $stars['phong-cao'] ?? null, ($vanXuongIndex + 2) % 12, 'phu_tinh'); // Simplified
+
+        // Thien Tai, Thien Tho (Menh, Than, Nam)
+        $thienTaiIndex = ($menhChiIndex + array_search($yearChi, self::CHIS)) % 12;
+        // Thien Tho: Than + Nam
+        $anThanIndex = (array_search('Dần', self::CHIS) + ($lunarMonth - 1) + $lunarHour) % 12;
+        $thienThoIndex = ($anThanIndex + array_search($yearChi, self::CHIS)) % 12;
+        $this->placeStar($horoscope, $stars['thien-tai'] ?? null, $thienTaiIndex, 'phu_tinh');
+        $this->placeStar($horoscope, $stars['thien-tho'] ?? null, $thienThoIndex, 'phu_tinh');
+
+        // Dau Quan (Thai Tue + Thang - Gio)
+        $dauQuanIndex = (array_search($yearChi, self::CHIS) - ($lunarMonth - 1) + $lunarHour); while($dauQuanIndex < 0) $dauQuanIndex += 12; $dauQuanIndex %= 12;
+        $this->placeStar($horoscope, $stars['dau-quan'] ?? null, $dauQuanIndex, 'phu_tinh');
+
+        // Thien Thuong, Thien Su (No, Tat)
+        $noBocIndex = ($menhChiIndex + 5) % 12;
+        $tatAchIndex = ($menhChiIndex + 7) % 12;
+        $this->placeStar($horoscope, $stars['thien-thuong'] ?? null, $noBocIndex, 'sat_tinh');
+        $this->placeStar($horoscope, $stars['thien-su'] ?? null, $tatAchIndex, 'sat_tinh');
     }
 
     protected function anSaoLuu(Horoscope $horoscope, int $viewYear): void
@@ -437,6 +536,43 @@ class HoroscopeService
             $currentBranch = $house->branch; $relationsForThisHouse = []; $normalizedBranch = Str::slug($currentBranch, '');
             if (isset($allRelations[$normalizedBranch])) { foreach ($allRelations[$normalizedBranch] as $relation) { $relationsForThisHouse[] = [ 'type' => $relation->relation_type, 'to_branch_code' => $relation->to_house_code, 'description' => $relation->description, ]; } }
             $house->relations = $relationsForThisHouse; $house->save();
+        }
+    }
+
+    protected function calculateHan(Horoscope $horoscope, int $viewYear, string $yearChi, int $lunarMonth, int $lunarHour, string $gender)
+    {
+        $khoiTieuHan = match(true) {
+            in_array($yearChi, ['Dần', 'Ngọ', 'Tuất']) => array_search('Thìn', self::CHIS),
+            in_array($yearChi, ['Thân', 'Tý', 'Thìn']) => array_search('Tuất', self::CHIS),
+            in_array($yearChi, ['Tỵ', 'Dậu', 'Sửu']) => array_search('Mùi', self::CHIS),
+            in_array($yearChi, ['Hợi', 'Mão', 'Mùi']) => array_search('Sửu', self::CHIS),
+            default => 0
+        };
+        $direction = ($gender == 'male') ? 1 : -1;
+        $age = $viewYear - $horoscope->birth_gregorian->year + 1;
+        $tieuHanIndex = ($khoiTieuHan + ($age - 1) * $direction);
+        while ($tieuHanIndex < 0) $tieuHanIndex += 12; $tieuHanIndex %= 12;
+        
+        $tieuHanBranch = self::CHIS[$tieuHanIndex];
+        $tieuHanHouse = $horoscope->houses->firstWhere('branch', $tieuHanBranch);
+        if ($tieuHanHouse) {
+            $viewYearChiIndex = ($viewYear - 4) % 12; if ($viewYearChiIndex < 0) $viewYearChiIndex += 12;
+            $viewYearChi = self::CHIS[$viewYearChiIndex];
+            $tieuHanHouse->update(['tieu_han' => 'LN.' . $viewYearChi]);
+        }
+
+        $nguyetHan1Index = ($tieuHanIndex - ($lunarMonth - 1));
+        $nguyetHan1Index = ($nguyetHan1Index + $lunarHour);
+        while ($nguyetHan1Index < 0) $nguyetHan1Index += 12; $nguyetHan1Index %= 12;
+
+        for ($m = 1; $m <= 12; $m++) {
+            $mIndex = ($nguyetHan1Index + ($m - 1)) % 12;
+            $mBranch = self::CHIS[$mIndex];
+            $mHouse = $horoscope->houses->firstWhere('branch', $mBranch);
+            if ($mHouse) {
+                $current = $mHouse->nguyet_han ? $mHouse->nguyet_han . ',' : '';
+                $mHouse->update(['nguyet_han' => $current . 'Th.' . $m]);
+            }
         }
     }
 

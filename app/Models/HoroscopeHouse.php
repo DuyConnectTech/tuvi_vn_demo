@@ -60,6 +60,8 @@ class HoroscopeHouse extends Model
 		'life_phase',
 		'house_order',
 		'dai_van_start_age',
+        'tieu_han',
+        'nguyet_han',
 		'dai_van_end_age',
 		'score',
 		'lunar_month',
