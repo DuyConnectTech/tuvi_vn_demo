@@ -169,62 +169,42 @@
 @endsection
 
 @push('js')
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    (function() {
-        function initApp() {
-            var $ = window.jQuery;
-            
-            $(document).ready(function() {
-                saveHistory();
+<script type="module">
+    $(document).ready(function() {
+        saveHistory();
 
-                // Store original class of the central view (Only target the one in Thien Ban)
-                const $centralView = $('.thien-ban .view-con-giap-la-so');
-                const originalClass = $centralView.attr('class');
+        // Store original class of the central view (Only target the one in Thien Ban)
+        const $centralView = $('.thien-ban .view-con-giap-la-so');
+        const originalClass = $centralView.attr('class');
 
-                // Highlight relations on hover
-                $('.cung').hover(function() {
-                    const currentHouseBranch = $(this).data('branch');
-                    const relations = $(this).data('relations');
-                    const branchIndex = $(this).data('branch-index');
+        // Highlight relations on hover
+        $('.cung').hover(function() {
+            const currentHouseBranch = $(this).data('branch');
+            const relations = $(this).data('relations');
+            const branchIndex = $(this).data('branch-index');
 
-                    // 1. Update Central View Line
-                    if (branchIndex !== undefined) {
-                        $centralView.attr('class', 'view-con-giap-la-so list-line-' + branchIndex);
-                    }
+            // 1. Update Central View Line
+            if (branchIndex !== undefined) {
+                $centralView.attr('class', 'view-con-giap-la-so list-line-' + branchIndex);
+            }
 
-                    // 2. Highlight Current House
-                    $(this).addClass('highlight-current');
+            // 2. Highlight Current House
+            $(this).addClass('highlight-current');
 
-                    // 3. Highlight related houses
-                    if (relations && relations.length > 0) {
-                        relations.forEach(relation => {
-                            const targetBranch = relation.to_branch_code;
-                            const relationType = relation.type; 
+            // 3. Highlight related houses
+            if (relations && relations.length > 0) {
+                relations.forEach(relation => {
+                    const targetBranch = relation.to_branch_code;
+                    const relationType = relation.type; 
 
-                            $(`td.cung[data-branch="${targetBranch}"]`).addClass(`highlight-${relationType}`);
-                        });
-                    }
-                }, function() {
-                    $(`td.cung`).removeClass('highlight-current highlight-tam-hop highlight-xung highlight-nhi-hop highlight-luc-hai');
-                    $centralView.attr('class', originalClass);
+                    $(`td.cung[data-branch="${targetBranch}"]`).addClass(`highlight-${relationType}`);
                 });
-            });
-        }
-
-        // Check if jQuery is loaded
-        if (window.jQuery) {
-            initApp();
-        } else {
-            // Retry after 100ms if loading via async script
-            var checkInterval = setInterval(function() {
-                if (window.jQuery) {
-                    clearInterval(checkInterval);
-                    initApp();
-                }
-            }, 100);
-        }
-    })();
+            }
+        }, function() {
+            $(`td.cung`).removeClass('highlight-current highlight-tam-hop highlight-xung highlight-nhi-hop highlight-luc-hai');
+            $centralView.attr('class', originalClass);
+        });
+    });
 
     function saveHistory() {
         const currentItem = {
